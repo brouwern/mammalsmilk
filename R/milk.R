@@ -1,0 +1,2 @@
+#' Cleaned milk dataset
+"milk"

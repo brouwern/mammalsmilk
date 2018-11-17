@@ -1,0 +1,43 @@
+"ord","fam","spp","mass.fem","gest.mo","lac.mo","mass.litter","repro.output","dev.birth","diet","arid","biome","fat","gest.month","lacat.mo"
+"Lagomorpha","Leporidae","Lepus europaeus",3961,1.42,0.9,337,0.09,3,"herbivore","yes","terrestrial",15.6,1.42,0.9
+"Lagomorpha","Leporidae","Oryctolagus cuniculus",1444,1.02,0.9,219,0.15,0,"herbivore","yes","terrestrial",15.2,1.02,0.9
+"Lagomorpha","Leporidae","Sylvilagus floridanus",1237,0.9,0.8,176,0.14,1,"herbivore","no","terrestrial",14.4,0.9,0.8
+"Primates","Atelidae12","Aloutta seniculus",5390,6.37,12.3,354,0.07,2,"herbivore","no","terrestrial",1.1,6.37,12.3
+"Primates","Atelidae12","Aloutta palliata",6400,6.22,14.2,369,0.06,2,"herbivore","no","terrestrial",1.6,6.22,14.2
+"Primates","Callitrichidae","Callithrix jacchus",323,4.9,5.4,61,0.19,2,"omnivore","no","terrestrial",3.6,4.9,5.4
+"Primates","Callitrichidae","Leontopithecus rosalia",570,4.35,4.3,107,0.19,2,"omnivore","no","terrestrial",10.2,4.35,4.3
+"Primates","Cebidae","Saimiri boliviensis boliviensis",750,4.5,5,107,0.14,2,"omnivore","no","terrestrial",4.6,4.5,5
+"Primates","Cercopithecidae","Chlorocebus pygerythrus",5750,5.5,8.5,318,0.06,2,"omnivore","no","terrestrial",3.1,5.5,8.5
+"Primates","Cercopithecidae","Macaca fascicularis",3233,5.49,9.6,408,0.13,2,"carnivore","no","terrestrial",5.2,5.49,9.6
+"Primates","Cercopithecidae","Macaca fuscata",10750,5.72,12.1,672,0.06,2,"omnivore","no","terrestrial",4.2,5.72,12.1
+"Primates","Cercopithecidae","Macaca mulatta",5140,5.47,9.5,476,0.09,2,"omnivore","no","terrestrial",6.2,5.47,9.5
+"Primates","Cercopithecidae","Miopithecus talapoin",1120,5.4,5.4,188,0.17,2,"omnivore","no","terrestrial",3,5.4,5.4
+"Primates","Cercopithecidae","Papio anubis",12933,1.1,7,1068,0.08,2,"omnivore","yes","terrestrial",4.5,1.1,7
+"Primates","Cercopithecidae","Papio cynocephalus",11725,1.1,7,854,0.07,2,"omnivore","yes","terrestrial",4.5,1.1,7
+"Primates","Cercopithecidae","Papio papio",19500,1.1,7,1000,0.05,2,"omnivore","yes","terrestrial",4.5,1.1,7
+"Primates","Galagidae9","Otolemur garnettii",731,4.4,5,49,0.07,3,"omnivore","no","terrestrial",7.3,4.4,5
+"Primates","Galagidae9","Otolemur crassicaudatus",935,4.41,4.5,80,0.09,3,"omnivore","no","terrestrial",8,4.41,4.5
+"Primates","Hominidae","Gorilla beringei beringei",90000,8.5,42,1600,0.02,2,"herbivore","no","terrestrial",1.9,8.5,42
+"Primates","Lemuridae","Eulemur fulvus",2500,4.02,5,85,0.03,2,"omnivore","no","terrestrial",0.9,4.02,5
+"Primates","Lemuridae","Eulemur macaco",2250,4.37,5.2,79,0.04,2,"omnivore","no","terrestrial",1.1,4.37,5.2
+"Primates","Lemuridae","Eulemur rubriventer",2000,4.28,3.3,86,0.04,2,"omnivore","no","terrestrial",0.8,4.28,3.3
+"Primates","Lemuridae","Eulemur mongoz",1350,4.29,5.1,71,0.05,2,"omnivore","no","terrestrial",0.7,4.29,5.1
+"Primates","Lemuridae","Varecia variegata",3750,3.34,3.7,205,0.05,2,"herbivore","no","terrestrial",3.2,3.34,3.7
+"Primates","Lorisidae","Nycticebus coucang",900,6.34,5.8,53,0.06,2,"omnivore","no","terrestrial",7,6.34,5.8
+"Rodentia","Bathyergidae","Heterocephalus glaber",80,2.23,1.2,17,0.21,0,"herbivore","yes","terrestrial",4.5,2.23,1.2
+"Rodentia","Castoridae","Castor fiber",19000,3.51,2.3,1700,0.09,3,"herbivore","no","terrestrial",19,3.51,2.3
+"Rodentia","Caviidae","Cavia porcellus",728,2.24,0.6,366,0.5,4,"herbivore","no","terrestrial",5.7,2.24,0.6
+"Rodentia","Caviidae","Kerodon rupestris",950,2.53,1.1,126,0.13,3,"herbivore","yes","terrestrial",7.5,2.53,1.1
+"Rodentia","Chinchillidae","Chinchilla lanigera",365,3.7,1.8,64,0.18,3,"herbivore","yes","terrestrial",11.2,3.7,1.8
+"Rodentia","Cricetidae10","Mesocricetus auratus",105,0.54,0.7,20,0.19,0,"omnivore","yes","terrestrial",4.9,0.54,0.7
+"Rodentia","Echimyidae","Thrichomys apereoides",374,3.1,1.5,66,0.18,4,"herbivore","yes","terrestrial",22.3,3.1,1.5
+"Rodentia","Muridae","Acomys cahirinus",41,1.23,0.8,14,0.34,3,"herbivore","yes","terrestrial",21.2,1.23,0.8
+"Rodentia","Muridae","Mus musculus",16,0.69,0.7,8,0.5,0,"omnivore","no","terrestrial",27,0.69,0.7
+"Rodentia","Muridae","Notomys alexis",31,1.16,1,11,0.35,1,"omnivore","yes","terrestrial",15,1.16,1
+"Rodentia","Muridae","Notomys cervinus",40,1.4,1.1,8,0.2,1,"omnivore","yes","terrestrial",10.3,1.4,1.1
+"Rodentia","Muridae","Notomys mitchelli",50,1.21,1,13,0.26,1,"omnivore","yes","terrestrial",7.5,1.21,1
+"Rodentia","Muridae","Pseudomys australis",65,1.02,0.9,13,0.2,0,"herbivore","yes","terrestrial",12.1,1.02,0.9
+"Rodentia","Muridae","Rattus norvegicus",253,0.71,0.8,51,0.2,0,"omnivore","no","terrestrial",8.8,0.71,0.8
+"Rodentia","Octodontidae","Octodon degus",235,2.96,1.2,74,0.31,3,"herbivore","yes","terrestrial",20.1,2.96,1.2
+"Rodentia","Scuiridae","Tamias amoenus",53,0.98,1.5,14,0.26,0,"omnivore","no","terrestrial",21.7,0.98,1.5
+"Rodentia","Scuiridae","Urocitellus columbianus",406,0.84,1,32,0.08,0,"herbivore","no","terrestrial",9.2,0.84,1

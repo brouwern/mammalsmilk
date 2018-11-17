@@ -1,0 +1,526 @@
+---
+title: 'Regression Data Exploration: Skibiel et al 2013 mammals milk data'
+author: "brouwern@gmail.com"
+date: "February 1, 2017"
+output:
+  pdf_document: default
+  word_document:
+    fig_caption: yes
+    fig_height: 5
+    fig_width: 9
+    reference_docx: rmarkdown_template.docx
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = TRUE)
+```
+
+
+
+## Introduction
+
+
+* Several possible response (y) variables: fat, protein etc.
+* We'll Focus on % of fat in milk
+* Several "continous predictors" / covariates (x variables)
+    + size of mom = "mass.fem" 
+    + duration of pregnancy/gestation = "gest.mon"    
+    + how long young fed = "lacat.mo" ("number of lactation months")   
+    + how big are babies = "mass.litter"         
+* Several "categorical predictors"
+    + "diet" = meat, plants, everything
+    + "arid" = desert or other; theory predicts arid environments impact evolution of milk
+    + "biome" = aquatic or terrestrial (includes bats as terrestrial)
+
+
+## Preliminaries
+
+### Load data
+```{r, echo = T, display = F}
+#Data cleaned in previous file
+
+dir. <- here::here("data/","skibiel_fat.csv")
+milk <- read.csv(file =dir.)
+```
+
+
+### Load packages
+
+```{r}
+library(ggplot2)
+library(cowplot)
+library(ggpubr)
+library(arm)
+library(dplyr)
+library(GGally)
+```
+
+
+
+## Data exploration
+
+Look at the data
+    
+```{r}
+# Hom much data?
+dim(milk)
+
+#focal columns
+##(use negative indexing to drop some)
+summary(milk[,-c(2,3,8,9)])
+```
+
+
+
+### Focal families in dataset
+
+This code is dense but let's us look at the most common families
+
+Tabulate number of families
+```{r}
+table.fam <- table(milk$fam)
+```
+
+Determine order
+```{r}
+numeric.order. <- order(table.fam,
+                        decreasing = T)
+```
+
+Largest families, in order
+```{r}
+table.fam <- data.frame(table.fam[numeric.order.][1:13])
+
+names(table.fam) <- c("fam","freq")
+
+table.fam
+```
+
+Plot as barplot; some added gplot code to rotate the axis lables
+```{r}
+ggbarplot(data = table.fam,
+          y = "freq",
+          x = "fam") +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, 
+                                   vjust = 0.5))
+```
+
+
+
+Tabulate number of order
+```{r}
+table.ord <- table(milk$ord)
+```
+
+Determine order
+```{r}
+numeric.order. <- order(table.ord,
+                        decreasing = T)
+```
+
+Largest orders, in order
+```{r}
+table.ord <- data.frame(table.ord[numeric.order.][1:9])
+
+names(table.ord) <- c("ord","freq")
+
+table.ord
+```
+
+
+* Artiodactyla = 23; Even-toed ungulate
+* Carnivora = 23
+* Primates = 22
+* Rodentia = 17
+* Chiroptera = 10; bats
+* Diprotodontia = 10; marsupials
+* Perrissodactyla = 7; odd-toed ungulates
+* Cetacea = 6
+* Lagomorpha = 3
+
+
+```{r}
+ggbarplot(data = table.ord,
+          y = "freq",
+          x = "ord") +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, 
+                                   vjust = 0.5))
+```
+
+
+
+
+### Plotting scatter plots
+
+To condense my plotting code I will save titles and axis labels to R objects.
+```{r}
+main. <- "Regression data: continous vs continuous"
+xlab. <- "Continous x: mass of female"
+ylab. <- "Continous y: \nfat contenxt of milk"
+```
+
+
+#### Look at % milk fat vs. mass of female
+
+* Note that the plot is dominated by whales!
+
+```{r}
+ggscatter(y = "fat",
+      x = "mass.fem",
+      data = milk,
+      main = main.,
+      xlab = xlab.,
+      ylab = ylab.)
+```
+
+
+A similar graph can be made using the stock ggplot function qplot(), except the variables arenot quoted
+```{r gg1, eval = F}
+qplot(y = fat,       # no " " !
+      x = mass.fem,
+      data = milk,
+      main = main.,
+      xlab = xlab.,
+      ylab = ylab.) 
+```
+
+
+
+
+## Look at  milk fat vs. log(mass of female)
+
+* Logging helps linearize the data
+* NOTE: statiticians typically use natural log = ln()
+* Biologists, especially when allometry is invovled, typically use base 10 = log10()
+* Original authors used log10, but I just realized this, so I'll stick with ln()
+* I believe (?) give similar answers, but log10 I think (?) makes biological interpretation easier (???)
+* ggpubr requires hard-coded variables and can't do the log transform "on the fly" in the same way as ggplot/qplot
+
+```{r}
+milk <- milk %>% dplyr::mutate(mass.fem.log = log(mass.fem))
+```
+
+Look at transformed data
+```{r}
+summary(milk$mass.fem.log)
+```
+
+
+Plot transformed data
+```{r}
+main.new <-"Regression data: continous vs log(continuous)" 
+
+ggscatter(y = "fat",
+      x = "mass.fem.log",
+      data = milk,
+      main = main.new,
+      ylab = ylab.,
+      xlab = xlab.)
+```
+
+
+
+## Add "smoother"
+
+Helps visualize trends
+
+```{r}
+ggscatter(y = "fat",
+      x = "mass.fem.log",
+      add = "loess",     #smoother
+      data = milk,
+      main = main.new,
+      ylab = ylab.,
+      xlab = xlab.)
+```
+
+
+
+
+
+## Look at % milk fat by a categorical variable (diet)
+
+Color code diets
+
+```{r}
+ggscatter(y = "fat",
+      x = "mass.fem.log",
+      color = "diet",
+      add = "loess",
+      data = milk,
+      main = main.new,
+      ylab = ylab.,
+      xlab = xlab.)
+```
+
+
+
+
+## Look at % milk fat by diet AND biome
+
+* "facets" are a powerful tool in ggplot
+* Turns out ALL of our aquatic spp are carnivores (sorry, no manatees)
+* This shows that "aquatic" and "diet" are "Confounded"
+
+
+```{r}
+ggscatter(y = "fat",
+      x = "mass.fem.log",
+      color = "diet",
+      facet.by = "biome",
+      data = milk,
+      main = main.new,
+      ylab = ylab.,
+      xlab = xlab.)
+```
+
+
+
+
+## Boxplots
+
+It can be useful to make boxplot just by categorical variables.  For me, this plot highlights that all carnivores are aquatic, and they have a wide range of fat contents.
+
+```{r, echo = T}
+ggboxplot(data = milk,
+          add = "jitter",
+          color = "biome",
+          y = "fat",
+          x ="diet")
+
+```
+
+
+
+
+
+
+
+
+## Focal data subset: Primates & Relatives
+
+* Primates
+* Rodents (this is why we use mouse models)
+* Rabbits
+
+```{r}
+file. <- "skibiel_primate_fat.csv"
+
+full.path <- here::here("data", #folder
+                        file.)  #file name
+
+primate.milk <- read.csv(file = full.path)
+```
+
+
+
+
+Compare original data and our working subset
+
+* Original = 130 speices
+* Working data = 42
+
+```{r}
+# Original data
+dim(milk)
+
+#out working subset
+dim(primate.milk)
+```
+
+
+## Plot working data:  milk fat ~ female size
+
+Do log transform
+```{r}
+primate.milk <- primate.milk %>% dplyr::mutate(mass.fem.log = log(mass.fem))
+```
+
+
+Make scatterplot; ggscatterhist() allows plots to beput in margin
+```{r, echo = T}
+ggscatterhist(y = "fat",
+      x = "mass.fem.log",
+      data = primate.milk,
+      margin.plot = "boxplot") 
+```
+
+
+
+## The big animal is a Gorrilla!
+```{r, echo = T}
+#make column to hold particular spp.names
+primate.milk$spp.focal <- ""
+
+#select spp of interest
+## This is just accross a span of the data
+i.focal <- c(17,18,19,23,30,34,39)
+
+#look at focals
+primate.milk$spp.focal[i.focal]
+
+#add spp names to spp.focal column
+primate.milk$spp.focal[i.focal] <- as.character(primate.milk$spp[i.focal])
+
+primate.milk$spp.focal <- gsub("(^.*)( )(.*)","\\1",primate.milk$spp.focal)
+
+```
+
+plot with names using some fancier ggplot code.  
+```{r}
+ggplot(data = primate.milk,
+       aes(y = fat,
+      x = mass.fem.log)) + 
+  geom_point()+
+  geom_text(aes(label=spp.focal),
+            hjust=1, 
+            vjust=0)
+```
+
+
+
+
+
+
+## Add regression line
+
+* % Fat generally declines as body mass increases
+* Grey areas is "confidence band"
+
+
+```{r, echo = T}
+ggscatter(y = "fat",
+      x = "mass.fem.log",
+      add = "reg.line",   #regression line
+      conf.int = TRUE,    #confidence int.
+      color = "ord",
+      data = primate.milk) 
+```
+
+
+
+
+## Alternate predictors
+
+We can also look at othe predictors
+
+First, we should log transform them.
+
+```{r}
+primate.milk <- primate.milk %>% dplyr::mutate(mass.fem.log = log(mass.fem),
+    gest.mo.log = log(gest.month),
+    lacat.mo.log = log(lacat.mo),
+    mass.litter.log = log(mass.litter))
+```
+
+
+
+### Duration of gestation
+
+ fat ~ log(gest.month)
+
+* % Fat generally declines as gestation duration increases
+* (the longer animal is pregnant, the less fatty the milk is)
+* longer pregnancy, lower milk fat
+
+Compare all data compiled with by order
+```{r, echo = T}
+no.order <- ggscatter(y = "fat",
+      x = "gest.mo.log",
+      data = primate.milk,
+      #color = "ord",
+      add = "reg.line",
+      conf.int = TRUE)
+
+by.order <- ggscatter(y = "fat",
+      x = "gest.mo.log",
+      data = primate.milk,
+      color = "ord",
+      add = "reg.line",
+      conf.int = TRUE)
+
+plot_grid(no.order,by.order)
+```
+
+
+
+
+
+## Duration of lactation
+
+ fat ~ log(lacat.mo)
+
+* % Fat generally declines as lactation duration increases
+* longer time kids are dependent, lower milk fat
+
+Compare all data compiled with by order
+```{r, echo = T}
+no.order <- ggscatter(y = "fat",
+      x = "lacat.mo.log",
+      data = primate.milk,
+      #color = "ord",
+      add = "reg.line",
+      conf.int = TRUE)
+
+by.order <- ggscatter(y = "fat",
+      x = "lacat.mo.log",
+      data = primate.milk,
+      color = "ord",
+      add = "reg.line",
+      conf.int = TRUE)
+
+plot_grid(no.order,by.order)
+```
+
+
+
+
+
+
+
+## Mass of litter
+
+ fat ~ log(mass.litter)
+
+* % Fat generally declines as litter size  increases
+* more or bigger babies, less milk fat
+
+```{r, echo = T}
+no.order <- ggscatter(y = "fat",
+      x = "mass.litter.log",
+      data = primate.milk,
+      #color = "ord",
+      add = "reg.line",
+      conf.int = TRUE)
+
+by.order <- ggscatter(y = "fat",
+      x = "mass.litter.log",
+      data = primate.milk,
+      color = "ord",
+      add = "reg.line",
+      conf.int = TRUE)
+
+plot_grid(no.order,by.order)
+```
+
+
+
+
+## Correlations among predictors
+
+ALl of the graphs of all of the predictors looked basically the same.  One reason is that all of the predictors are highly correlated, so they are all basically indicating something similar about the animals.
+
+We can get a sense for these correlations using the ggpairs() fucntion in the GGally package.
+
+```{r}
+vars. <- c("fat","gest.mo.log","mass.fem.log","lacat.mo.log"  ,  "mass.litter.log")
+GGally::ggpairs(data = primate.milk,
+        column = vars.,
+        diag =NULL )
+```
+
+

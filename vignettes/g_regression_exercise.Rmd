@@ -1,0 +1,324 @@
+---
+title: 'HW 4: Regression Case Study Tutorial 4: Regression with one variable'
+author: "brouwern@gmail.com"
+date: "February 13, 2017"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load Data
+
+```{r}
+setwd("C:/Users/Jackie/Desktop")
+dat2 <- read.csv("milk_subset.csv")
+```
+
+
+
+# Regression of fat ~ body size
+
+* The author's of the milk paper indicate that there are typically correlations between the size of mammal and fat content.  
+
+They note:
+"W/in particular phylogenetic groups, there are significant negative relationships between body mass & ... fat ... (Merchant et al. 1989; Derrickson et al 1996; Hinde & Milligan 2011). Spp. w/ small body masses are expected to produce more concentrated & energetically dense milk b/c they have higher mass-specific metabolic demands & reduced digestive capacity due to smaller GI tracts (Blaxter 1961). Thus, small-bodied species should be incapable of ingesting greater quantities of milk to meet metabolic & nutritional demands & should instead require more concentrated & energy dense milk (Blaxter 1961)."
+
+**References**
+
+* Derrickson 1992. Comparative reproductive strategies of altricial & precocial eutherian mammals. Functional Ecology, 6, 57-65.
+* Derrickson et al. 1996. Milk composition of two precocial, arid-dwelling rodents, Kerodon rupestris and Acomys cahirinus.
+Physiological Zoology, 69, 1402-1418.
+
+
+
+# Plot fat ~ body size
+
+* Looking at the data it doesn't look like there is a consistent negative trend
+
+```{r}
+library(ggplot2)
+qplot(y=fat.log10,
+      x=mass.log10, 
+      data = dat2)
+```
+
+
+* Indeed, across multiple taxonomic groups, The author's of the milk paper do **not** find a negative relationship between fat % and body size.
+* They used a log transformation, which I think is less than ideal.  
+* We'll check if a logit transformation matters.
+
+
+## The author's model: log(fat) vs log(mass)
+
+Regression fat % against mass of animal
+```{r}
+log.log.mass <- lm(fat.log10 ~ mass.log10, data = dat2)
+
+
+```
+
+```{r}
+summary(log.log.mass)
+```
+
+* The slope of the relationship between fat & mass is 0.022 on the log-log scale.  
+* This is in the opposite direction hypothesized. * The p value is 0.411, so the relationship is not significant.
+
+**QUESTION:**
+
+* Write the regression equation for this line
+
+
+
+## My model logit(fat) ~ log(mass)
+
+* Percentage data is best transformed with a logit transformation.  See Warton & Hui "Why the arcsine is asinine"
+
+### Fit a model to logit transformed data
+```{r}
+logit.log.mass <- lm(fat.logit ~ mass.log10, data = dat2)
+
+summary(logit.log.mass)
+```
+
+* The slope is even more positive, and the p-value smaller.
+
+
+### using coef()
+
+Compare just at the coefficients using coef()
+
+```{r}
+coef(log.log.mass)
+coef(logit.log.mass)
+```
+
+* The logit Transformation substantially changes the intercepts and slopes
+* This is expected because log data and logit transformation are on different scales. 
+* Because of this, these regression parameters can't be compared.
+
+
+Look at the p values for the two slopes
+```{r}
+summary(log.log.mass)$coefficients
+summary(logit.log.mass)$coefficients
+```
+
+
+The p value is ~0.4 for the log-log and ~0.2 for logit-log.  
+
+
+
+### Look at the residuals of the log-log model
+
+* par(mfrow = c(2,2)) sets up a 2 x 2 panel
+
+```{r}
+par(mfrow = c(2,2), 
+    mar = c(4,4,2,1))
+plot(log.log.mass)
+```
+
+**QUESTIONS**
+
+Why plot provides information about...
+* ... homogeneity of variance?
+* ... normality of residuals?
+* ... outliers/influential points?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWERS**
+
+* Residual vs. fit plot: Homogeneity of variance (homoscedasticity)
+* Normal Q-Q plot: Normality of residual
+* Scale-Location plot: ...
+* Residuals vs. Leverage: outliers/influential points
+
+
+
+**Some thoughts:**
+
+* At 1st glance I thought that the Residual vs. fitted plot had problems; 
+    * it looks like the residuals are skewed negative.  
+* However, I think this is just due to point 86 being so low.  
+* Ignoring 86, the points are basically a football shape centered on zero, which is typical.
+* Point 86 does stick the furthest below the QQplot lines
+
+
+
+
+### Look at the residuals of the logit-log model
+
+* Let's see if my transformation makes any difference
+
+```{r}
+par(mfrow = c(2,2), 
+    mar = c(4,4,2,1))
+plot(logit.log.mass)
+```
+
+* Residuals look similar regardless of the transformation.  
+* Note that point 86 sticks out on both of the top 2 plots.  
+* In the Normal Q-Q plot is down near the x axis, away from the dashed diagonal line.  This is probably not an issue but it would be good to double check this point to make sure it is correct (i.e. no typo).
+
+
+
+# On (not) Comparing models with different transformations of the response variable
+
+* Note that we can't compare the fit of these 2 models because transforming the y variable changes the underlying structure of the data.  
+* You can't compare the "log-log"" and "logit-log"" model with either ANVOA (because the models are not nested) or AIC (because the underlying response variables differ). 
+* Transformations of the y variable are assessed based on their residuals; you can't formally test whether one transformation is better than the other (doing so would probably lead to p-hacking too)
+
+
+
+
+# Plot model
+
+* The slope of this model is not significant, but let's practice plotting it against the raw data * This is an essential but frequently skipped step in model checking.
+
+
+## Get predictions from model
+
+* Use the predict() function to get  predictions from the fitted regression model. 
+* When applied directly to a fitted regression model (ie, our model log.log.mass), the predict() function 
+    * takes each observed row of data
+    * plugs the appropriate variables into the fitted regression model 
+    * determines the predicted values of the response (y) variable.
+
+### Get predictions
+
+Get the predictions with **predict()**
+
+```{r}
+y.hat <- predict(log.log.mass)
+```
+
+Add prediction to the dataframe 
+```{r}
+dat2$y.hat <- y.hat
+```
+
+
+
+### Plot predictions
+
+Plot predictions with **points()**
+```{r}
+par(mfrow = c(1,1))
+
+#plot raw dat
+plot(fat.log10 ~ mass.log10, data = dat2)
+
+#plot predicitons as points
+points(y.hat ~ mass.log10, data  = dat2, col = 2)
+```
+
+
+
+
+We can plot the predictions as a straight line like this by using the **"type = 'l'"** argument in points().  
+
+```{r}
+#plot raw dat
+plot(fat.log10 ~ mass.log10, data = dat2)
+
+#plot predicitons as points
+points(y.hat ~ mass.log10, 
+       data  = dat2, 
+       col = 2, 
+       type = "l")
+```
+
+
+## Plot predictions from a defined dataset
+
+* A good way to plot the output of a fitted model is to make a new dataframe that contains data that spans the range of numbers you want to plug into the model. 
+* This is especially important when you have more complex datasets
+* In this case, our regression is simple and just has a single predictor, mass.log10
+* We can make a small new dataframe with a column called "mass.log10" with just 2 numbers, the min and max values in the observed data
+* we can get these min and max using min() and max(), or the function range()
+
+
+1st, get the range of the x variable
+```{r}
+#get the range of x variable
+observed.range <- range(dat2$mass.log10)
+
+observed.range
+```
+
+Make into a dataframe
+```{r}
+#make new dataframe
+newdat <- data.frame(mass.log10 = observed.range)
+
+newdat
+```
+
+
+
+### Using predict() with newdata
+
+* Use **predict()** w/ the argument **newdat =** 
+
+```{r}
+y.hat2 <- predict(log.log.mass, 
+                  newdat = newdat)
+
+y.hat2
+```
+
+
+Add the y.hat predictions to our new dataframe
+```{r}
+newdat$y.hat2 <- y.hat2
+
+newdat
+```
+
+
+Plot raw data w/ line defined by the predictions
+```{r}
+#plot raw dat
+plot(fat.log10 ~ mass.log10, data = dat2)
+
+#plot predicitons as points
+points(y.hat2 ~ mass.log10, 
+       data  = newdat, 
+       col = 2, 
+       type = "l")
+```
+
+
+
+### Plotting simple model output with abline()
+
+* When a model just has a single predictor we can just use the function **abline** to quickly plot it.  
+* This only works for models with a single predictor.
+
+```{r}
+#plot raw dat
+plot(fat.log10 ~ mass.log10, 
+     data = dat2)
+
+#plot model w/abline
+abline(log.log.mass, 
+       col = 2)
+```
+

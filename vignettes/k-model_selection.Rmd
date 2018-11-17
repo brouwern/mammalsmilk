@@ -1,0 +1,1163 @@
+---
+title: "Duq Biostats Week 5 | Regression Tutorial 6: Model selection"
+author: "brouwern@gmail.com"
+date: "February 13, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, strip.white = FALSE, warning = FALSE,message = FALSE)
+```
+
+
+
+```{r, echo = FALSE}
+setwd("C:/Users/lisanjie2/Desktop/TEACHING/1_STATS_CalU/1_STAT_CalU_2016_by_NLB/1_STAT_Duq_2017/HOMEWORK/Duq_Biostats_Homework_4_Milk_regression/homework4_RMD_vs2")
+dat2 <- read.csv("milk_subset.csv")
+```
+
+
+# Introduction
+
+## Original Data
+
+**Skibiel et al 2013.**  Journal of Animal Ecology.  The evolution of the nutrient composition of mammalian milks. 82: 1254-1264.
+
+
+## Model selection tutorial: Relative lactation length
+
+* We saw that body size is not an important variable for predicting milk composition
+* a variable that is important in most of the models Skibiel et al 2013 fit is "relative lactation duration." or "relative lactation length" 
+
+
+
+They define relative lactation duration as:
+
+**"Lactation length was analysed relative to the total period of reproduction so that relative lactation length = absolute lactation length/(absolute gestation length + absolute lactation length)."**
+
+* This transformation to a proportion corrects for the fact that 
+    + longer gestation results in larger offspring 
+    + and hence a longer periods of lactation as these large babies mature.
+* We'll look in depth at their models for % fat~lactation duration to understand model selection and model comparison.
+
+
+
+
+# Data setup
+
+## Relative lactation duration
+
+Create a variable for relative lactation length.  Use the **with()** command to make the code clean
+
+```{r}
+dat2$rel.lactation <- with(dat2, lacatation.months/(gestation.month +                                             lacatation.months))
+```
+
+
+
+## Transformation
+
+* As the authors did, Log10 transform relative lactation
+* (recall that log = natural log in R)
+
+```{r}
+dat2$rel.lact.log10 <- log10(dat2$rel.lactation)
+```
+
+
+Relative Lactation duration is a proportion, so a logit transformation may be more appropriate.
+
+```{r}
+#the car package has a logit function
+library(car)
+
+#apply logit transformation
+dat2$rel.lact.logit <- logit(dat2$rel.lactation,percents = T)
+```
+
+
+
+
+# Data exploration
+
+## Untransformaed dat: Plot log10(fat) ~ rel.lactation
+
+* First, plot data w/ No transformation of the predictor variable.
+* Note the triangle shape of the data.  This forebodes heterogeneous variance.
+
+```{r}
+library(ggplot2)
+
+qplot(y = fat.log10,
+      x = rel.lactation,
+      data = dat2) + 
+  ggtitle("no transformation of x")
+```
+
+
+## Author's transformation: Plot log10(fat) ~ log10(rel.lactation)
+
+* Interesting.  This makes the plot really ugly.
+* An un-transformed x axis might be better
+
+
+```{r}
+qplot(y = fat.log10,
+      x = rel.lact.log10,
+      data = dat2)+ 
+  ggtitle("log10 transformation of x")
+```
+
+
+## Plot log10(fat) ~ logit(rel.lactation)
+
+* "rel.lactation" is a proportion so perhaps the logit would be better
+* Logit makes it look bad too!
+
+```{r}
+qplot(y = fat.log10,
+      x = rel.lact.logit,
+      data = dat2)
+```
+
+
+
+## Plot logit(fat) ~ logit(rel.lactation)
+
+* logit(y)~logit(x)
+* Still ugly.  
+* Any transformation of the x variable seems bad.  
+* I believe the original authors did do use the log transform of x axis, but perhaps they didn't check what it did and just assumed it was a good idea.
+    + I can't totally reproduce their results so I'm not 110% sure that they did.
+
+```{r}
+qplot(y = fat.logit,
+      x = rel.lact.logit,
+      data = dat2)
+```
+
+
+
+## Look at different transformations
+
+Fit models of un-transformed lactation duration and compare to log and logit transformations
+
+```{r}
+#model 1: log
+f.rellact.raw <- lm(fat.log10 ~ rel.lactation, data = dat2)
+
+
+#modlel 2: log-log
+f.rellact.log10 <- lm(fat.log10 ~ rel.lact.log10, data = dat2)
+
+
+#model 3: log-logit
+f.rellact.logit <- lm(fat.log10 ~ rel.lact.logit, data = dat2)
+
+```
+
+
+The anova() command gives us the p value for the slope
+```{r}
+anova(f.rellact.raw)
+anova(f.rellact.log10)
+anova(f.rellact.logit)
+```
+
+We can't compare these 3 models directly, but we can assess how well the fit the data by looking at their residuals
+
+
+### Look at residuals
+
+#### Residuals for the raw data:
+
+Resid vs. fitted looks pretty bad - definite triangle shape.
+```{r}
+par(mfrow = c(2,2))
+plot(f.rellact.raw)
+```
+
+
+
+
+#### Residuals for the log and logit
+
+Resid vs. fitted looks pretty bad - can't say its really worse necessarily, but my intuition is that it is.  
+
+```{r}
+plot(f.rellact.log10)
+```
+
+```{r}
+plot(f.rellact.logit)
+```
+
+
+* These diagnostic plots indicate that there may be problems with heterogeneous variance
+* the problem may be worse using log transformed relative lactation duration as a predictor (that is, a long transformed x axis).
+* However, we are not using all of the predictors yet that the the author's did. 
+* Adding these additional predictors _may_ alleviate the issues in the data.
+* In general you want to do diagnostics on your best model to confirm that it meets the assumptions
+* However, exploring the residuals of all your models can help you better understand the data
+
+
+
+
+# Model selection
+
+* We'll now fit a series of models as the author did 
+* then use AIC to assess which one is best.  
+* They used relative lactation duration as a continuous predictor of the fat content of milk, & also several categorical variables: 
+    + biome (terrestrial vs. aquatic)
+    + diet (carnivore, herbivore, omnivore)
+    + arid habitat (yes/no)  
+
+They looked at different combinations of these predictors
+
+
+## Fit models
+
+Fit models with all of the combinations of these predictors - this is a long list
+
+
+### Null model
+```{r}
+#Model w/no predictors
+###Note: authors don't fit this model
+f.null <- lm(fat.log10 ~ 1,
+             data = dat2)
+
+```
+
+### Models w/ 1 predictor
+
+```{r}
+#continous predictor
+##rel lactation length (continous)
+f.rellact <- lm(fat.log10 ~ rel.lact.log10,
+                data = dat2)
+
+#categorical predictor
+##Biome (categorical)
+f.biome <- lm(fat.log10 ~ biome,
+              data = dat2)
+
+##Diet (cat.)
+f.diet <- lm(fat.log10 ~ diet, 
+             data = dat2)
+
+##Arid-adapted (cat)
+f.arid <- lm(fat.log10 ~ arid,
+             data = dat2)
+
+
+```
+
+
+
+### Models w/2 predictors
+
+* I often call these "additive" models because they imply a hypothesis that the two predictors have seperate effects
+* Also because they are defined with a "+" sign
+  + This is in contrast to an interaction model, defined by multiplication ("*")
+
+```{r}
+
+#Biome + diet (2 categorical vars)
+f.biome.diet <- lm(fat.log10 ~ biome + 
+                               diet,
+                   data = dat2)
+
+#Rel lac length + diet (1 continous, 1 cat)
+f.lact.diet <- lm(fat.log10 ~ rel.lact.log10 + 
+                    diet,
+                  data = dat2)
+
+
+#Rel lac length + biome (1 cont, 1 cat)
+f.lact.biome <- lm(fat.log10 ~ rel.lact.log10  +
+                    biome, 
+                  data = dat2)
+
+```
+
+
+### Model w/3 terms
+
+* Continuous: rel.lact.log10
+* Categorical: biome, and diet
+
+```{r}
+#Re lac  + diet + biome (1 cont, 2 cat)
+f.lact.biome.diet <- lm(fat.log10 ~    
+                          rel.lact.log10 + 
+                          biome +
+                          diet, 
+                          data = dat2)
+```
+
+
+
+# Model selection w/AIC
+
+
+## Get a single AIC value
+
+We can get individual AIC values for a model using AIC()
+
+```{r}
+AIC(f.biome)
+```
+
+**QUERSTION:**
+How do you interpret an AIC value?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWER:**
+You can't; on its own, and AIC value is meaningless
+
+
+## Get an AIC table
+
+* We can get ALL AIC values using bbmle:AICtab.  
+* "base=TRUE" returns the raw AIC value in addition to the delta AIC. 
+
+```{r}
+library(bbmle)
+AICtab(base= TRUE,
+       f.null,
+       f.biome,
+       f.rellact,
+       f.diet,
+       f.arid,
+       f.biome.diet,
+       f.lact.diet,
+       f.lact.biome,
+       f.lact.biome.diet
+)
+```
+
+
+
+## Get an AICc table
+
+* To get AICc values (small sample correction) we use the ICtab function
+* Its annoying that there isn't AICctab()
+* They guy that wrote bbmle, Ben Bolker, is so awesome I'll let it slide
+
+
+```{r}
+ICtab(type = "AICc",
+      base = TRUE,
+      f.null,
+       f.biome,
+       f.rellact,
+       f.diet,
+       f.arid,
+       f.biome.diet,
+       f.lact.diet,
+       f.lact.biome,
+       f.lact.biome.diet)
+```
+
+
+* These AIC values are similar in magnitude as the authors report, but not identical.  
+* (F statistics they report are also similar to what I get, but not identical).  
+* I am not sure what the issue is.  I think their best model had an AICc of 75ish, while I get 97.8.
+
+
+## Check the impact of different transformations
+
+* Our best model, "f.lact.biome.diet", was fit like this 
+    + both response and predictor variables are on log scale
+
+```{r}
+#Re lac  + diet + biome (1 cont, 2 cat)
+f.lact.biome.diet <- lm(fat.log10 ~    
+                          rel.lact.log10 + 
+                          biome +
+                          diet, 
+                          data = dat2)
+```
+
+
+Let's fit a model with %fat transformed on the logit scale
+
+```{r}
+f.lact.biome.diet.LOGIT <- lm(fat.logit ~    
+                          rel.lact.log10 + 
+                          biome +
+                          diet, 
+                          data = dat2)
+```
+
+
+### COmpare different transformation w/AIC
+
+```{r}
+AICtab(base = TRUE,
+       f.lact.biome.diet,
+       f.lact.biome.diet.LOGIT)
+```
+
+* AIC for the log(fat) model is MUCH MUCH lower that logit(fat) model we just fit
+* Does this mean that log(fat) is  MUCH MUCH better?
+* NO!  It means that we fit models to two datasets on very very different scales?
+
+
+
+**QUESTION**
+
+* What might be the impact of having missing data (As) for some of your predictors but not others?  
+    + FOr example, what if you had "biome" data for every mammals species
+    + but you don't have diet info for 10 of the species
+    + When you lack data for a predictor and include that predictor in the model, R drops the entire row of data from the analysis
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWER**
+
+* When you have missing data for some predictors you cannot compare models w/AIC
+* anova() will usually give you a warning; AIC() and AICtab won't!
+* You can only compare models that are fit to the exact same dataset
+* I suspect this is a major problem that people forget about.
+
+
+# Exploring the impact of missing data
+
+Let's make a new dataset from our milk  data and create some missing data
+
+```{r}
+dat.fake <- dat2
+```
+
+
+I'll randomly remove 5 observations from just the "diet column"
+```{r}
+#runif() draws random numbers from a uniform distribution
+i.random <- runif(n = 5, min = 1, max = length(dat2$diet))
+
+i.random <- round(i.random)
+
+#Change random variables to NA
+dat.fake[i.random, "diet"] <- NA
+
+```
+
+
+Now I"ll fit a model with rel.lact.log10 and diet to the original data
+```{r}
+#just relative lacation
+m.rel.lac <- lm(fat.logit ~ rel.lact.log10, 
+                          data = dat2)
+
+#relative lacation and diet
+m.rel.lac.diet <- lm(fat.logit ~ rel.lact.log10 +
+                       diet, 
+                          data = dat2)
+
+```
+
+
+Now I'll fit a model to the faked data
+
+```{r}
+#just relative lacation
+fake.m.rel.lac <- lm(fat.logit ~ rel.lact.log10, 
+                          data = dat.fake)
+
+#relative lacation and diet
+fake.m.rel.lac.diet <- lm(fat.logit ~ rel.lact.log10 +
+                            diet, 
+                          data = dat.fake)
+
+```
+
+
+
+Compare models with correct data
+
+```{r}
+AICtab(base = TRUE,
+       m.rel.lac,
+       m.rel.lac.diet)
+```
+
+
+
+Compare models with faked  data
+
+```{r}
+AICtab(base = TRUE,
+       fake.m.rel.lac,
+       fake.m.rel.lac.diet)
+```
+
+
+
+The original and "fake" modles with just lacations duration as a predictor are the same b/c they are fit to the same dataset
+```{r}
+AICtab(base = TRUE,
+       m.rel.lac,
+       fake.m.rel.lac)
+```
+
+
+
+
+The original and "fake" modles with "diet" add have different AICs because they are fit to differnet datas
+```{r}
+AICtab(base = TRUE,
+       m.rel.lac.diet,
+       fake.m.rel.lac.diet)
+```
+
+
+
+We will only see an error if we use AICc.  THis is because AICc incorporates sample size into its equation
+
+```{r, echo = F}
+ICtab(base = TRUE,
+      type = "AICc",
+       m.rel.lac.diet,
+       fake.m.rel.lac.diet)
+```
+
+
+We'll also see an error if we try anova() on the two fake models
+```{r}
+#test "fake"
+anova(fake.m.rel.lac,
+       fake.m.rel.lac.diet)
+```
+
+
+
+
+# Model Diagnostics:
+
+* Let's look at diagnostic plots of  the best model, f.lact.biome.diet
+
+```{r}
+AIC(f.lact.biome.diet)
+
+plot(f.lact.biome.diet)
+```
+
+**QUESTION**
+What do you thin about these residuals?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWER**
+* The resid vs. fitted model is still pretty bad;
+* addition of biome and diet as predictors do not improve the model's fit.
+
+
+# Plotting model output
+
+* The best way to check a model is to plot it against the raw data. 
+* To make our life simpler we'll just consider the model that had lactation duration and diet 
+    + That is, we'll ingore the "biome" predictor.  
+* This will take a bit of work because the categorical predictor has three levels
+* In general ggplot() has better facilities for doing this, but the syntax is very different from plot()
+* Also setting this up is good practice for basic R skills
+
+
+## Seperating indices for each plot element
+
+First, I'll create indices for the  3 diet groups using which()
+
+```{r}
+#indices for each diet group
+i.omni <- which(dat2$diet == "omnivore")
+i.carn <- which(dat2$diet == "carnivore")
+i.herb <- which(dat2$diet == "herbivore")
+
+```
+
+
+## Plot different diets
+
+* Next I'll plot all the data in black using plot(), 
+* then overlay carnivores in red (col = "red" or col = 2)
+* and herbivores in green (col = "green" or col = 3)
+* use points() to add new elements to a plot
+* Note use of indicies to select the subset of data being used
+    + data = dat2[i.carn,] for canivores
+    + data = dat2[i.herb,] for herbivores
+* Legend gets added with length()
+    + ggplot also makes pretty good legend on the fly
+    + why don't I just invest the effort to each ggplot from the begining...
+
+```{r}
+#plot all raw data
+par(mfrow = c(1,1))
+plot(fat.log10 ~ rel.lact.log10, 
+     data = dat2)
+
+#color carnivores
+points(fat.log10 ~ rel.lact.log10, 
+       data = dat2[i.carn,],
+       col = "red")
+
+#color herbivores
+points(fat.log10 ~ rel.lact.log10, 
+       data = dat2[i.herb,],
+       col = "green")
+
+
+#add a legend
+legend("bottomleft", 
+       legend = c("Carnivore", 
+                  "Omnivore",
+                  "Herbiore"),
+       col = c("red",
+               "green",
+               "black"),
+       pch = 1)
+
+```
+
+
+## Add regression lines
+
+* To plot the regression lines I'll generate predictions (y.hat values) using predict().  
+* This uses the regression equation from the specificed model (f.lact.biome.diet) and plugs in observed values (xs) for the 3 predictors (relative lactation duration, biome, and diet).
+* This requires a bit of code b/c there are 3 levels to the diet variable
+
+
+### Generate predictions
+
+Generate predictions for plotting works best if we create a new dataframe with organized data the span the entire original dataset.
+
+
+
+The range of lacation duration values
+```{r}
+# ranges uses min() and max()
+rng <- range(dat2[,"rel.lact.log10"])
+
+```
+
+
+
+Levels of the factor variables.  
+
+* THese are accessed with the levels() command
+```{r}
+#levels of the diet factor
+levs1 <- levels(dat2[,"diet"])
+
+levs1
+
+#levels of the biome fator
+levs2 <- levels(dat2[,"biome"])
+  
+
+```
+
+
+Create a new dataframe from which to generate predictiosn
+
+* This uses the expand.grid function
+* This generates all combinations of the varibles that are given
+
+```{r}
+newdat <- expand.grid(rel.lact.log10 = rng,
+                      diet = levs1,
+                      biome = levs2)
+
+newdat
+```
+
+
+
+Note: I'm using the model with lactation and diet (f.lact.diet), NOT the one best model which also included "biome" (f.lact.biome.diet).
+
+### Generate prediction
+
+* use predict()
+* give it themodel in question, "f.lact.diet""
+* give it the new data we made with expand.grid()
+    + y.hat is the fancy name for model predictions
+
+
+```{r}
+y.hat <- predict(f.lact.diet,
+                 newdata = newdat)
+```
+
+
+**POP QUIZ**
+y.hat - y = ??????
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWER***
+y.hat - y = residuals
+
+
+Add the y.hat values (predictions) to the newdat datafrme
+
+```{r}
+newdat$fat.y.hat <- y.hat
+```
+
+
+
+## Plot everything
+
+* Now plot the lines define by the y.hat values
+* Since we're using Rmarkdown we have to include both the code to plot the points in the chunk, followed by the code for the lines. 
+* Note that the regression lines will be plotted with points() also, with the arguement "type = 'l'" for lines.
+
+
+
+f.null,
+       f.biome,
+       f.rellact,
+       f.diet,
+       f.arid,
+       f.biome.diet,
+       f.lact.diet,
+       f.lact.biome,
+       f.lact.biome.diet
+       
+
+```{r}
+#Plot points
+## plot base plot
+plot(fat.log10 ~ rel.lact.log10, data = dat2)
+
+
+##plot red points
+points(fat.log10 ~ rel.lact.log10, data = dat2[i.carn,],col = "red")
+
+##plot green points
+points(fat.log10 ~ rel.lact.log10, data = dat2[i.herb,],col = "green")
+
+
+#Plot regression lines
+
+## Indices for each subset
+i.carn.newdat <- which(newdat$diet == "carnivore")
+i.omni.newdat <- which(newdat$diet == "omnivore")
+i.herb.newdat <- which(newdat$diet == "herbivore")
+
+## Plot lines
+### type = "l" makes points() plot lines
+points(fat.y.hat ~ rel.lact.log10, 
+       data = newdat[i.carn.newdat,],
+       col = "red",
+       type = "l")
+
+points(fat.y.hat ~ rel.lact.log10, 
+       data = newdat[i.omni.newdat,],
+       col = "black",
+       type = "l")
+
+points(fat.y.hat ~ rel.lact.log10, 
+       data = newdat[i.herb.newdat,],
+       col = "green",
+       type = "l")
+```
+
+
+
+
+**QUESTION**
+It looks like the herbiore and omnivore lines are almost exaclty on top of each other. What does this mean?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWER**
+This means the must have very similar intercept parameters.  I can check this with **coef()**
+
+```{r}
+coef(f.lact.diet)
+```
+
+Both "dietherbivore" and  "dietomnivore" have intercepts of about -0.57.
+
+
+
+**QUESTION**
+How do you write this as a regression equation?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**GENERAL MODEL STATEMENT**
+y = Intercept + rel.lact.log10 + diet
+
+The "diet" catagory has 3 levels
+
+
+**EQUATION WITH COEFFICIENTS**
+y = 1.2 + -0.45*rel.lact.log10 
+        + -0.58*(Is diet herbivore?) 
+        +  -0.57*(Is diet omnivore?) 
+
+
+* The intercept of 1.2 corresponds to carnivores
+* -0.58 is the differene between carnviores and herbivores
+* -0.57 is the differene between carnviores and omnivore
+
+
+# Back to heterogeneity of variance
+
+* Our regression line for carnivorees fits those species pretty well, but the omni- and herbivore lines don't fit their data well.  
+* This indicates the source of our hetergenity of variance problem:
+
+
+
+
+
+## Visualize coefficients
+
+Here's a trick: I"m going to put all of our plotting code intoa function
+
+
+```{r}
+make.plot <- function(){
+  #Plot points
+## plot base plot
+plot(fat.log10 ~ rel.lact.log10, data = dat2)
+
+
+##plot red points
+points(fat.log10 ~ rel.lact.log10, data = dat2[i.carn,],col = "red")
+
+##plot green points
+points(fat.log10 ~ rel.lact.log10, data = dat2[i.herb,],col = "green")
+
+
+#Plot regression lines
+
+## Indices for each subset
+i.carn.newdat <- which(newdat$diet == "carnivore")
+i.omni.newdat <- which(newdat$diet == "omnivore")
+i.herb.newdat <- which(newdat$diet == "herbivore")
+
+## Plot lines
+### type = "l" makes points() plot lines
+points(fat.y.hat ~ rel.lact.log10, 
+       data = newdat[i.carn.newdat,],
+       col = "red",
+       type = "l")
+
+points(fat.y.hat ~ rel.lact.log10, 
+       data = newdat[i.omni.newdat,],
+       col = "black",
+       type = "l")
+
+points(fat.y.hat ~ rel.lact.log10, 
+       data = newdat[i.herb.newdat,],
+       col = "green",
+       type = "l")
+}
+
+```
+
+
+
+Now make the plot
+
+```{r}
+make.plot()
+```
+
+
+
+
+Make the plot and add intercept
+
+```{r}
+#make plot
+make.plot()
+
+#add verticle line at intercept
+abline(v = 0)
+
+#get intercept term from model
+int <- coef(f.lact.diet)[1]
+
+#plot arow for intercept
+arrows(y0 = int,
+       x0 = -0.2,
+       y1 = int,x1 = 0, 
+       length = 0.1,col = 2,lwd = 3)
+
+```
+
+
+
+Make the plot and add intercept+"dietherbivore" term
+
+```{r}
+#make plot
+make.plot()
+
+#add verticle line at intercept
+abline(v = 0)
+
+#get intercept term from model
+int <- coef(f.lact.diet)[1]
+dietherbivore <- coef(f.lact.diet)[3]
+
+
+#add the intercept and "dietherbivore" terms together
+int.plus.dietherbivore <- int+dietherbivore
+
+#plot arow for intercept
+arrows(y0 = int,
+       x0 = -0.2,
+       y1 = int,x1 = 0, 
+       length = 0.1,col = 2,lwd = 3)
+
+#plot arow for intercept+dietherbivore
+arrows(y0 = int.plus.dietherbivore,
+       x0 = -0.2,
+       y1 = int.plus.dietherbivore,
+       x1 = 0, 
+       length = 0.1,col = 3,
+       lwd = 3)
+
+```
+
+
+
+
+# Further model and data explorations
+
+## What about outliers identified previously
+
+Index values of weird groups
+```{r}
+# 
+i.aust <- which(dat2$Australia == "Australia")
+i.lemur <- which(dat2$lemurs == "lemur")
+i.odd.ung <- which(dat2$order == "Perrissodactyla")
+
+```
+
+
+
+### Plot Australia
+```{r}
+#make plot
+make.plot()
+
+#plot points
+## australia spp
+points(fat.log10 ~ rel.lact.log10, 
+       data = dat2[i.aust,],
+       col = "black",
+       pch = 16)
+```
+
+
+### Plot Lemurs
+```{r}
+#make plot
+make.plot()
+
+##lemurs
+points(fat.log10 ~ rel.lact.log10, 
+       data = dat2[i.lemur,],
+       col = "black",
+       pch = 22)
+```
+
+
+
+### Plot odd-toed ungulates
+```{r}
+#make plot
+make.plot()
+
+## odd-toed ungulates
+points(fat.log10 ~ rel.lact.log10, 
+       data = dat2[i.odd.ung,],
+       col = "black",
+       pch = 3)
+```
+
+
+
+### Plot everything
+
+* add legend with legend()
+
+```{r}
+
+
+#make plot
+make.plot()
+
+
+## australia spp
+points(fat.log10 ~ rel.lact.log10, 
+       data = dat2[i.aust,],
+       col = "black",
+       pch = 16)
+
+##lemurs
+points(fat.log10 ~ rel.lact.log10, 
+       data = dat2[i.lemur,],
+       col = "black",
+       pch = 22)
+
+## odd-toed ungulates
+points(fat.log10 ~ rel.lact.log10, 
+       data = dat2[i.odd.ung,],
+       col = "black",
+       pch = 3)
+
+
+
+
+#plot legend
+legend("bottomleft",pch = c(16,22,3,1), legend = c("Australia","lemur","even-toed ungulates","other"))
+
+
+
+```
+

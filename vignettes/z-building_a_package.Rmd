@@ -1,0 +1,204 @@
+---
+title: "z) Creating this package"
+author: "Nathan Brouwer"
+date: "November 12, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+## Introduction
+
+The following code outlines the key steps I did, principally using the usethis package, to set up a this package for containing code relate to this paper:
+
+**Skibiel et al 2013.**  The evolution of the nutrient composition of mammalian milks.  Journal of Animal Ecology 82: 1254-1264.  https://doi.org/10.1111/1365-2656.12095 
+
+## Packages
+
+```{r, eval = F}
+library(devtools)
+library(usethis)
+library(here)
+```
+
+## Create repository
+
+I create a shroom git repo then cloned into it by hand by creating an RStudio Project.
+
+## Set up package
+
+I then used create_package() within my project directory to build the basic package infrastructure  This overights the initial project (after a handy prompt in the console).
+```{r eval = F}
+create_package(path = getwd())
+```
+
+## Create vignette infrastructure
+
+Create a vignette infrastructure and dummy vignette
+```{r, eval = F}
+use_vignette("Introduction")
+```
+
+## Create "readme" and "news" files
+
+```{r, eval = F}
+use_readme_md()
+use_news_md()
+```
+
+
+
+## Create git ignore
+
+Am not sure how to use this properly yet
+
+```{r, eval = F}
+use_git_ignore(".pdf", directory = ".")
+```
+
+
+## Add required packages
+
+```{r, eval = F}
+use_package("dplyr", "Imports")
+use_package("tidyr", "Imports")
+use_package("ggplot2", "Imports")
+use_package("nlme", "Imports")
+use_package("lme4", "Imports")
+use_package("bbmle", "Imports")
+```
+
+
+
+## Don't save/load user workspace between sessions
+
+```{r, eval = F}
+use_blank_slate()
+```
+
+
+## Use roxygen for documentation
+```{r, eval = F}
+use_roxygen_md()
+```
+
+
+## Package-level documents
+"Adds a dummy .R file that will prompt roxygen to generate basic package-level documentation. "
+```{r, eval = F}
+use_package_doc()
+```
+
+
+## Use pkgdown
+
+For making front end website
+
+```{r, eval = F}
+use_pkgdown()
+```
+
+
+
+## Set up data
+
+### Look at data in my extdata file
+
+External data is stored in "/inst/extdata"
+```{r, eval = F}
+list.files(here::here("/inst/extdata"))
+```
+
+#### Raw data
+
+```{r eval = F}
+milk_raw <- read.csv(here::here("/inst/extdata",
+                    "skibiel_mammalsmilk_raw.csv"))
+
+use_data(milk_raw)
+use_r("milk_raw")
+```
+
+
+
+
+#### Other data data
+
+Just the fat column
+```{r eval = F}
+milk <- read.csv(here::here("/inst/extdata",
+                    "skibiel_mammalsmilk.csv"))
+
+use_data(milk)
+use_r("milk")
+```
+
+
+Just the primates and relatives rows
+```{r  eval = F}
+milk_primates <- read.csv(here::here("/inst/extdata",
+                    "skibiel_primate_fat.csv"))
+
+use_data(milk_primates)
+use_r("milk_primates")
+```
+
+
+
+
+Just the fat column
+```{r  eval = F}
+milk_fat <- read.csv(here::here("/inst/extdata",
+                    "skibiel_fat.csv"))
+
+use_data(milk_fat)
+use_r("milk_fat")
+```
+
+
+
+
+
+
+
+
+```{r}
+#use_data_raw()
+```
+
+## Spell check
+
+use_spell_check
+
+
+## Other potentially useful functions
+
+use_r() #Create or edit a .R file
+
+
+use_build_ignore()
+Add files to .Rbuildignore
+
+
+
+
+use_version() use_dev_version()
+Increment package version
+
+
+
+edit_r_profile() 
+edit_r_environ() 
+edit_r_makevars() 
+edit_rstudio_snippets() 
+edit_git_config() 
+edit_git_ignore()
+
+
+
+use_directory()
+Use a directory

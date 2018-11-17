@@ -1,0 +1,94 @@
+---
+title: "C) Data subsetting using dplry"
+author: "Nathan Brouwer"
+date: "November 13, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Make some subset without certain columns and certain rows
+
+## Preliminaries
+
+```{r}
+library(here)
+library(dplyr)
+```
+
+## Load data
+
+Load data cleaned in previous script
+```{r}
+file. <- "skibiel_mammalsmilk.csv"
+
+full.path <- here::here("data", #folder
+                        file.)  #file name
+
+dat.selected <- read.csv(file = full.path)
+```
+
+Check
+
+```{r}
+dim(dat.selected)
+```
+
+
+## Remove columns
+
+The N column is sample size and isn't needed.  For many analyses we'll fous on fat, so we'll dorp the other columns
+
+```{r}
+dat.fat <- dat.selected %>% dplyr::select(-N,
+                                               -prot,
+                                               -sugar,
+                                               -energy)
+```
+
+
+We'll save this sub-dataset for easy access
+
+```{r}
+file. <- "skibiel_fat.csv"
+
+full.path <- here::here("data", #folder
+                        file.)  #file name
+
+write.csv(dat.fat,file = full.path,
+          row.names =F)
+```
+
+
+## Filter by rows
+
+For some analyses we'll focus on just primates and close-ish relatives.
+
+
+```{r}
+primates.and.friends <- c("Rodentia","Primates","Lagomorpha")
+
+primate.fat <-  dat.fat %>% filter(ord %in% primates.and.friends)
+```
+
+
+
+```{r}
+file. <- "skibiel_primate_fat.csv"
+
+full.path <- here::here("data", #folder
+                        file.)  #file name
+
+write.csv(primate.fat,file = full.path,
+          row.names =F)
+```
+
+
+```{r}
+
+```
+

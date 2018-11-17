@@ -1,0 +1,417 @@
+---
+title: 'b) Data cleaning'
+author: "brouwern@gmail.com"
+date: "Fall 2019"
+output:
+    toc: yes
+    toc_depth: 2
+  word_document:
+    toc: yes
+    toc_depth: '2'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this tutorial we'll 
+
+* load data from Skibiel et al 2013 in .csv format
+* fix some typos that were introduced
+* clean up some columns of numeric data that contain character data
+* save the data as a .csv for future use
+
+
+### Important functions used
+
+* read.csv
+* grep
+* gsub
+* as.numeric
+* which
+* write.csv
+
+
+### Original Data
+
+**Skibiel et al 2013.**  The evolution of the nutrient composition of mammalian milks.  Journal of Animal Ecology 82: 1254-1264.  https://doi.org/10.1111/1365-2656.12095 
+
+
+
+## Preliminaries
+
+### Packages
+
+We'll use the following packages.  You'll need to download them if you haven't already.
+
+```{r}
+library(here)
+```
+
+## Loading data
+
+### Data preparation
+
+The raw data is from a word file of appendices from the original paper. 
+
+* Table S1. Milk composition of mammals at mid-lactation
+* Table S2. Ecology and life histories of mammals whose milk composition has been described
+
+I pasted the data by hand into Excel and saved it as a .csv file. Once in .csv form it can be loaded into R and further cleaned up.  (In the future I will re-do this all in R).
+
+### Using the datasets
+
+The datasets for this package can be found in serval places.
+
+1. Internal within the package and loaded into R using the data() function. 
+1. On GitHub
+1. Saved as .csv files with the package source code.  R saves all your packages in a single, and the mammalsmilk directory will have the .csv files under mammalsmilk/inst/extdata
+
+
+How data gets loaded into R is always somewhat particular to how you are running R and where you have your data saved.  I will outline a basic way to load data first, then provide code for how I use a more advanced and flexible approach. 
+
+
+#### Loading data for begining users
+
+The easiest way to load data is to figure out where you have saved the data, then use the **"Import dataset"** button in RStudio to navigate there.  This will gerate code to load the data into your current R sessions.  You can copy this code and paste it into your script for future use. 
+
+Using the following steps I can generate code to load the milk data
+
+1. Click on "Import Dataset", which is on the "Environment" tab of the of the Environment / History / Connnection panel.
+1. Select "From text (base)" (all the options work similarly)
+1. Navigating ot the data
+1. Clicking through the pop up windows to finalize the import.
+
+
+The code that gets generated looks like this, which reflects the particular location of the .csv file on my hard drive
+```{r, eval = F}
+dat <- read.csv("~/1_R/git/mammalsmilk/data/skibiel_mammalsmilk_raw.csv")
+```
+
+Based on the file name, RStudio gives R object the name "skibiel_mammalsmilk_raw", which I change to just "dat" to make it easier to type.
+
+This approach will always work, but has one major hangup: if I make any changes to the folder structure of my project, such as where it is on my hard drive, then the read.csv() code will break.  In the next section, I show a more flexible technique.
+
+#### Loading data flexibly
+
+For my work I usually
+
+* Create a seperate folder for each analysis
+* Use an RStudio Project for the analysis
+* Keep code in one folder
+* Keep data in a seperate folder
+* use the here() function in the here package to detect where my RStudio package is on my hard drive
+
+here() does two things
+
+1. Figures out where the current working directory is on your hard drive
+1. Builds valid file names for locations you specify relative to that working directory
+
+The here package is new-ish and there are unfortunatley some other packages that have here() functions, so its always necessary to use here::here().
+
+
+If I call here::here() it tells me where my project is
+```{r}
+here::here() 
+```
+
+
+To load data, I usually create and object with my file name of interest
+
+```{r}
+file. <- "Skibiel_mammalsmilk_raw.csv"
+```
+
+I then use here to build the full file path for the data file.  "data" is the folder where the .csv file is.
+```{r}
+full.path <- here::here("data", #folder
+                        file.)  #file name
+```
+
+Note that here() take the file path, adds the "/data" folder and finally the "/Skibiel_mammalsmilk_raw.csv" file.
+```{r}
+full.path
+```
+
+I can then pass this R object with the text of the file path to read.csv()
+```{r}
+dat <- read.csv(file = full.path)
+```
+
+### Look at data
+
+Look at the size of what was just loaded
+```{r}
+dim(dat)
+```
+
+and take a look at the raw data
+```{r, echo = F}
+head(dat)
+tail(dat)
+summary(dat)
+```
+
+
+
+## Clean data
+
+The data are a bit rough because they were formatted to be a table in a paper.  There's lots of text within cells added as annotations, and probably some errors due to switching from a table in a word doc to .csv.
+
+### Mannually fix incorrect NAs
+
+There are 2 NA values in my "fat" column that should't be there; they should be valid numeric entries.  I use the following code to
+
+* Identify the location of the NAs with is.na()
+* Identify the specific row of data by using which() to ID the specific species with an NA for fat
+* Overwrite the NA with the correct data using row indexing
+    + ie "dat[i.H.niger,"fat"] <- 5.0"
+
+Note that is.na() returns TRUE/FALSE values; "TRUE" acts like specific index when you use it for row indexing.  So, even though "i.NA" is a vector of TRUES and FALSE, dat$spp[i.NA]" returns just the two species that match the "TRUES" 
+
+(There are probably tidyverse ways of doing this but I haven't looked into it.)
+
+
+
+```{r}
+# Look at fat column
+summary(dat$fat)
+
+# Find NAS
+i.NA <- is.na(dat$fat)
+
+#Identify the species w/ NAs
+dat$spp[i.NA]
+
+# Extract the indexes of the appropriate species
+i.H.niger   <- which(dat$spp == "Hippotragus niger")
+i.C.elaphus <- which(dat$spp == "Cervus elaphus hispanicus")
+
+#Overwrite the bad values with correct values
+dat[i.H.niger,"fat"] <- 5.0
+dat[i.C.elaphus,"fat"] <- 12.6
+```
+
+
+
+### Clean texts from numeric variables
+
+There are some text annotations from the raw data still hanging out in the dataframe.  I will use "regular expressions" to clean these up.  Regular expression take practice to use but there are many resources online for learning about them  (Cleaning up asterisks (*), as below, is even a little tricker).
+
+What follows is just a brief snapshot into this feature of R.  R is known, however, for not having stellar basic regular expression features.  Some tools in the tidyverse are available to make things less painful, but I haven't switched to them yet.
+
+
+#### Locate unwanted characters with grep()
+
+There are letters, commas, and asterisks that were annotations in the original datafile.  Easy to remove with find-replace, but also very easy with gsub(), with not chance of changing anything else in your spreadsheet you dont want
+
+Look at all of the protein column; those asterisks are a problem.  There's also an "s" in one cell.
+```{r}
+summary(dat$protein)
+```
+
+
+* Use grep() to find the index of things
+* "[a-zA-Z]" = "find all letter, lower and uppercase"
+
+```{r}
+i.letters <- grep("[a-zA-Z]",dat$protein)
+
+dat$protein[i.letters]
+```
+
+There's the "S". 
+
+```{r}
+#these are equivalent for the simple case of a single letter
+i.S <- grep("S",dat$protein)  #no brackets
+i.S <- grep("[S]",dat$protein)#brackets
+
+dat$protein[i.S]
+
+```
+
+### Replace unwanted characters with gsub()
+
+```{r}
+dat$protein <- gsub("[a-zA-Z]", #pattern
+                    "",         #replace
+                    dat$protein)#data
+```
+
+Check
+```{r}
+grep("[a-zA-Z]",dat$protein)
+```
+
+
+### Use the gsub() command to replace "special" characters 
+
+
+#### Asterisks: "*"
+
+* Asterisks are a "special character" for regular expressions
+* These can be tricky
+* Have to put \\ in front of it
+
+```{r}
+dat$protein <- gsub("\\*","",dat$protein)
+```
+
+Check
+```{r}
+grep("\\*",dat$protein)
+```
+
+#### COmmas ","
+
+Commas are also species characters
+
+```{r}
+dat$protein <- gsub("\\,","",dat$protein)
+```
+
+Check
+```{r}
+grep("\\,",dat$protein)
+```
+
+
+### Check for spaces
+
+These are frequent typos in data
+
+```{r}
+grep(" ", dat$protein)
+```
+ 
+ 
+but luckily none!
+ 
+ 
+### Convert character data to numeric data
+
+* Because there were non-numeric characters (S, a comamn, *) in the column, are loaded "protein" as character data; basicly it treated it as words/symbols but not numbers.
+* We now need to convert it back to numbers
+* This is done with the command as.numeric()
+* Converting back and forth can somtimes cause problems, so its good to put the converted info in a new column to check against the old
+
+ 
+```{r}
+dat$protein.num <- as.numeric(dat$protein)
+```
+
+Compare old and new columns
+
+```{r}
+head(dat[,c("protein.num","protein")])
+tail(dat[,c("protein.num","protein")])
+```
+
+### Clean other columns
+
+Check other columns
+```{r}
+summary(dat[,c("sugar","energy")])
+```
+
+#### Sugar
+
+* The sugar column has "<" and letters.  
+* I can put anything I want removed inside the brackets
+    + "[a-zA-Z<]"" wiil get rid of the letters and "<"
+
+
+```{r}
+summary(dat$sugar)
+```
+
+Remove letters and "<"
+```{r}
+dat$sugar <- gsub("[a-zA-Z<]","",dat$sugar)
+```
+
+Convert and check
+```{r}
+dat$sugar.num <- as.numeric(dat$sugar)
+
+head(dat[,c("sugar.num","sugar")])
+
+```
+
+
+
+#### Energy
+
+```{r}
+#The followign are equivalent
+summary(dat[,c("energy")])
+summary(dat$energy)
+
+#clean
+dat$energy <- gsub("[a-zA-Z<]","",dat$energy)
+
+#convert and check
+dat$energy.num <- as.numeric(dat$energy)
+
+head(dat[,c("energy.num","energy")])
+
+
+```
+
+
+## Remove unwanted columns with dplyr
+
+Once we've checked that our data have converted properly from character to numeric, we can remove the old columns using select() and negative indexing.
+```{r}
+dat.selected <- dat.all %>% dplyr::select(-dry.matter,
+                                   -protein,
+                                   -sugar,
+                                   -energy,
+                                   -ref,
+                                   -lactation.stage.orig)
+```
+
+Note that during initial cleaning I only remove variable that are completely redundant; otherwise I leave everything in.
+
+## Change elements common accross column
+
+Remove ".NUM" and ".num" using gsub()
+
+```{r}
+names(dat.selected) <- gsub(".NUM","",names(dat.selected))
+names(dat.selected) <- gsub(".num","",names(dat.selected))
+```
+
+
+## Rename columns 
+
+To polish a dataset for analysis, I like to shorten the variable names 
+
+```{r}
+dat.selected <- dat.selected %>% rename(fam = family,
+                                        mass.fem = mass.female,
+                                        gest.mo = gestation.month,
+                            lac.mo = lacatation.months,
+                            prot = protein,
+                            dev.birth = dev.stage.at.birth,
+                            ord = order)
+```
+
+
+### Save the cleaned data
+
+```{r}
+write.csv(dat.selected, "data/skibiel_mammalsmilk.csv",
+          row.names = F)
+```
+
+
+```{r}
+
+```
+

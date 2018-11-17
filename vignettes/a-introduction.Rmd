@@ -1,0 +1,57 @@
+---
+title: "a) Introduction to the mammals' milk case study"
+author: "Nathan Brouwer"
+date: "November 13, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+Skibiel et al (2013) examines the relationship between various the nutritional content of the milk and various aspects of mammal life history (gestation duration, offspring number, body size).  The nutritional profile of milk can vary widely, from 61% fat to just 0.2%.  Numerous theories have been proposed to explain how this variation is structured; for examples, small mammals have high metabolic rates and so are predicted to produce energy rich milk with a high fat content, and carnivores are thought to produce high protein milk because of their diet.
+
+The main hypotheses addressed relate to the following factors:
+
+* Body mass
+* Arid adaptation
+* Diet
+* Lactation length
+* Developmental stage at birth
+* Terrestrial vs. aquatic
+* Reproductive output
+
+Skibiel et al (2013) use linear regression to examine a number of specific hypotheses.  Each data point in their analysis is a single species for which they have obtained nutritional and life history information.  Cross-species analyses like these are common in ecology, but present a problem: just as two trees growing next to each other in a forest might be similar in size because they experience similar environments, closely related species are typically similar to each other because of their shared evolutionary history.  Its been shown that this similarity violates statistical assumptions about the **independence** of data points.  Treating each species as an independent data point will therefore make p-values too small and confidence intervals too narrow.
+
+Skibiel et al (2013) use several well-established techniques to address this issue.  These techniques are beyond the scope of the following analyses; for simplicity, we will act as each species is independent.  This will allow us to focus on more general modeling issues instead of the peculiarities of phylogenetically informed regression.  Because ignoring phylogeny this is a major simplification, I will frequently bring this point up.
+
+## Outline of case study
+
+The tutorials in this case study will cover all aspects of regression modeling:
+
+* Data preparation and cleaning
+* Data visualization
+* Linear regression with one predictor
+* Multiple regression
+* Interactions between variables
+* Model comparison & model selection with AIC
+* Model diagnostics
+
+
+## Original publication abstract
+
+For reference, the original abstract is reproduced below.  The original abstract is structured into five numbered bullet points.  I have **bolded** key terms for emphasis.
+
+1. In mammals, nutrient allocation during lactation is a critical component of maternal care as milk intake promotes juvenile growth and survival, and hence maternal and offspring fitness.
+1. Milk composition varies widely across mammals and is hypothesized to have arisen via selection pressures associated with environment, diet and life history. These hypotheses have been proposed based on observations and/or cross‐species comparisons that did not standardize for stage of lactation and did not consider evolutionary history of the species in analyses.
+1. We conducted the largest **comparative analysis** of milk composition to date accounting for **phylogenetic relationships** among species in order to understand the selective advantage of producing milk with specific nutritional profiles. We examined four milk constituents in association with species ecology while incorporating phylogeny in analyses.
+1. **Phylogenetic signal** was apparent for all milk constituents examined. After **controlling for phylogeny**, diet and relative lactation length explained the greatest amount of variation in milk composition. Several aspects of species' ecologies, including adaptation to arid environments, reproductive output and maternal body mass were not associated with milk composition after accounting for phylogeny.
+1. Our results suggest that milk composition is largely a function of evolutionary history, maternal nutrient intake and duration of milk production. Arriving at these conclusions was made possible by including the evolutionary relationships among species.
+
+
+
+## References 
+
+**Skibiel et al 2013.**  The evolution of the nutrient composition of mammalian milks.  Journal of Animal Ecology 82: 1254-1264.  https://doi.org/10.1111/1365-2656.12095 

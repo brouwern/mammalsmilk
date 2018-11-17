@@ -1,0 +1,514 @@
+
+---
+title: "Multiple regression with categorical variables"
+author: "brouwern@gmail.com"
+date: "January 30, 2017"
+output:
+  word_document:
+    reference_docx: rmarkdown_template.docx
+    fig_width: 9
+    fig_height: 5
+    fig_caption: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = TRUE)
+```
+
+
+```{r, echo = F}
+#load data
+milk2 <- read.csv(file = "Skibiel_clean_milk_focal_column.csv")
+milk3 <- read.csv(file = "Skibiel_clean_milk_focal_genera.csv")
+
+library(arm)
+milk2$fat.logit <- logit(milk2$fat.percent/100)
+
+```
+
+
+# Adding Categorial Variables
+
+* The most basic regression has a continous y variable and a continuous x variable
+* That is, continous response and continous predictor
+* You can have multiple continous predictors, resulting in multiple regression
+* You can also add categorical predictors
+* Also known as factors
+* Fitting a regression w/ categorical predictors is kind of like fitting 2 seperate regression models, one to each subset of data
+* (However, fitting a regression w/ 2+ continous predictors is NOT like fitting 2 sep. regression1)
+
+**Milk data's dategorical/factor/grouping variables**
+
+* diet     
+* arid
+* biome
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+# Subsetting data in R
+
+* many ways to subset data in R
+* subset() is handy
+* (can also use which() command)
+
+Two biomes:
+```{r}
+summary(milk2$biome)
+```
+
+<br>
+
+```{r}
+#note use of "biome ==" w/ 2 "="
+aquatics <- subset(milk2, 
+                   select = c("fat.logit",
+                              "biome",
+                              "lacat.mo.NUM"),
+                   biome == "aquatic")
+
+terrest <- subset(milk2, 
+                   select = c("fat.logit",
+                              "biome",
+                              "lacat.mo.NUM"),
+                   biome == "terrestrial")
+```
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+## Look at data subsets
+
+Aquatic species
+```{r}
+dim(aquatics)
+summary(aquatics)
+```
+
+Terrestrial species
+```{r}
+dim(terrest)
+summary(terrest)
+```
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+## Fit seperate model to each subgroup
+
+Model aquatic
+```{r}
+lm.aquatics <- lm(fat.logit ~ log(lacat.mo.NUM), 
+              data = aquatics)
+
+summary(lm.aquatics)$coefficients
+```
+
+Model terrestrials
+```{r}
+lm.terrest <- lm(fat.logit ~ log(lacat.mo.NUM), 
+              data = terrest)
+
+summary(lm.terrest)$coefficients
+```
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+## Compare Model output
+
+* 1^st^ line shows intercepts from both models
+* 2^nd^ line shows slopes
+* Different modes in columns
+* What's different
+
+```{r, echo = F}
+library(car)
+library(pander)
+temp <- compareCoefs(lm.aquatics, lm.terrest)
+attributes(temp)$dimnames[[2]][1] <- "Aqua est"
+attributes(temp)$dimnames[[2]][2] <- "Aqua SE"
+attributes(temp)$dimnames[[2]][3] <- "Terr est"
+attributes(temp)$dimnames[[2]][4] <- "Terr SE"
+
+pander(temp)
+```
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+## Plot our 2 seperate models
+
+```{r, echo  = F}
+source("./scripts_Lecture4/sx_mtext_plot_coefs_in_margin.R")
+
+par(mfrow = c(1,2),
+    mar = c(3,3,4,0))
+
+xlim. <- range(log(milk2$lacat.mo.NUM)) 
+ylim. <- range(milk2$fat.logit, na.rm = T)
+
+#Plot aquatics
+plot(fat.logit ~ log(lacat.mo.NUM),
+     data = aquatics,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     xlim = xlim.,
+     ylim = ylim.,
+     main = "")
+abline(lm.aquatics, col = 3, lwd = 3)
+m.coefs(lm.aquatics, plot.p = F)
+mtext(text = "Log(lactation dur)",
+      line = 2,
+      side = 1)
+mtext(text = "logit(percent fat)",
+      line = 2,
+      side = 2)
+mtext(text = "Aquatic species",
+      side = 1, line = -1)
+
+#Plot terrestrials
+plot(fat.logit ~ log(lacat.mo.NUM),
+     data = terrest,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     xlim = xlim.,
+     ylim = ylim.,
+     cex =2,
+     main = "")
+abline(lm.terrest, col = 4, lwd = 3)
+m.coefs(lm.terrest, plot.p = F)
+mtext(text = "Log(lactation dur)",
+      line = 2,
+      side = 1)
+mtext(text = "Terrestrial species",
+      side = 1, line = -1)
+
+
+
+```
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+## Plot our 2 seperate models
+### Compare intercepts
+
+```{r, echo  = F}
+source("./scripts_Lecture4/sx_mtext_plot_coefs_in_margin.R")
+
+par(mfrow = c(1,2),
+    mar = c(3,3,4,0))
+
+xlim. <- range(log(milk2$lacat.mo.NUM))
+ylim. <- range(milk2$fat.logit, na.rm = T)
+
+#Plot aquatics
+plot(fat.logit ~ log(lacat.mo.NUM),
+     data = aquatics,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     xlim = xlim.,
+     ylim = ylim.,
+     main = "")
+abline(lm.aquatics, col = 3, lwd = 3)
+m.coefs(lm.aquatics, plot.p = F)
+mtext(text = "Log(lactation dur)",
+      line = 2,
+      side = 1)
+mtext(text = "logit(percent fat)",
+      line = 2,
+      side = 2)
+mtext(text = "Aquatic species",
+      side = 1, line = -1)
+abline(v = 0, col = 2)
+arrows(x0 = 0,x1 = -1.45,
+       y0=-0.1755,y1 = -0.1755,
+       col = 2,angle = 10)
+
+#Plot terrestrials
+plot(fat.logit ~ log(lacat.mo.NUM),
+     data = terrest,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     xlim = xlim.,
+     ylim = ylim.,
+     cex =2,
+     main = "")
+abline(lm.terrest, col = 4, lwd = 3)
+m.coefs(lm.terrest, plot.p = F)
+mtext(text = "Log(lactation dur)",
+      line = 2,
+      side = 1)
+mtext(text = "Terrestrial species",
+      side = 1, line = -1)
+abline(v = 0, col = 2)
+arrows(x0 = 0,x1 = -1.45,
+       y0=-2.055,y1 = -2.055,
+       col = 2, angle = 10)
+
+
+```
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+## Run single model with categorical predictors
+
+* Adding just a categorical predictor adds a new term
+* The model defines 2 lines with 3 terms
+
+```{r}
+milk2$log.lact.mo <- log(milk2$lacat.mo.NUM)
+lm.lac.dur.add.biome <- lm(fat.logit ~ log.lact.mo+ 
+                             biome, 
+                           data = milk2)
+
+summary(lm.lac.dur.add.biome)
+```
+
+
+**Model 1:**
+fat.logit ~ (Int.) +                    slope*log(lactation)
+
+**Model 2:**
+fat.logit ~ (Int.) + biometerrestrial + slope*log(lactation)
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+## Translating equations
+
+* Adding just a categorical predictor adds a new term
+* The model defines 2 lines with 3 terms
+
+**Word equations**
+**Model 1:**
+fat.logit ~ (Int.) +                    slope*log(lactation)
+
+**Model 2:**
+fat.logit ~ (Int.) + biometerrestrial + slope*log(lactation)
+
+**Numeric equations**
+**Model 1:**
+fat.logit ~ 0.0157 +                    -0.41*log(lactation)
+
+**Model 2:**
+fat.logit ~ 0.0157 +            -2.10 + -0.41*log(lactation)
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+## Plot both lines together
+
+```{r, echo = F}
+source("./scripts_Lecture4/fnxn_plot_intxns.R")
+```
+
+
+```{r, echo = F}
+par(mfrow = c(1,1),
+    mar = c(4,4,2,1))
+plot.interactions(model = lm.lac.dur.add.biome,
+                  x.cont = "log.lact.mo",
+                  x.cat = "biome",
+                  y = "fat.logit",
+                  cols = 2:3)
+mtext("lm(fat.logit ~ lacat.mo.log + biome)", cex = 1.4)
+legend("bottomleft",col = 2:3,legend = c("Aqua", "Terr"),
+       lty = 1)
+
+
+```
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+## What determines the distance betwen the two lines?
+
+```{r}
+library(arm)
+display(lm.lac.dur.add.biome)
+```
+
+```{r, echo = F}
+par(mfrow = c(1,1),
+    mar = c(4,4,1,1))
+plot.interactions(model = lm.lac.dur.add.biome,
+                  x.cont = "log.lact.mo",
+                  x.cat = "biome",
+                  y = "fat.logit",
+                  cols = 2:3)
+#mtext("lm(fat.logit ~ lacat.mo.log + biome)", cex = 1.4)
+legend("bottomleft",col = 2:3,legend = c("Aqua", "Terr"),
+       lty = 1)
+int <- coef(lm.lac.dur.add.biome)[1]
+offset.  <- coef(lm.lac.dur.add.biome)[3]
+temp <- int+-offset.+offset./2
+arrows(x0 =0, x1 = 0,code = 3,angle = 10,lwd = 3,
+       y1 = int,y0 =int+offset.)
+text(labels = round(offset.,3),x = -0.5,y = -temp,cex = 1.25
+     )
+#m.coefs(lm.lac.dur.add.biome, plot.p = F)
+
+```
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+
+## Interactions:
+
+* An interaction is when one variable changes the values of another
+* For a continous x categorical interaction, the slope of the continuous variable depends on the value of the categorical var.
+
+
+
+## Model lactation duration * biome interaction
+
+```{r}
+lm.lac.dur.mult.biome <- lm(fat.logit ~ log(lacat.mo.NUM) +
+                              biome +
+                              log(lacat.mo.NUM)*biome, 
+                            data = milk2)
+
+summary(lm.lac.dur.mult.biome)
+
+```
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+# Interaction in R
+
+* R can figure out all the terms
+* It "expands" the equation
+* In equation below, I've just included "lacat.mo.log*biome"
+    + no "+ biome" as previously
+```{r}
+lm.lac.dur.mult.biome <- lm(fat.logit ~ log.lact.mo*biome, 
+                            data = milk2)
+
+summary(lm.lac.dur.mult.biome)
+
+```
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+## Plot interactions
+
+* Both slopes change
+* Both intercepts change
+
+```{r}
+
+plot.interactions(model = lm.lac.dur.mult.biome,
+                  x.cont = "log.lact.mo",
+                  x.cat = "biome",
+                  y = "fat.logit",
+                  cols = 2:3)
+
+
+```
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+## Compare models
+### Significance test
+
+* Test significance of 2nd intercept 
+```{r, echo = -1}
+logit.lac.duration.all <- lm(fat.logit ~ log(lacat.mo.NUM), 
+                             data = milk2)
+anova(lm.lac.dur.add.biome, 
+      logit.lac.duration.all)
+```
+
+
+* We can test the significance of the interaction
+
+```{r}
+anova(lm.lac.dur.mult.biome, 
+      lm.lac.dur.add.biome)
+```
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+## Testing all terms at once
+
+* test with the anova() command on a single model
+
+```{r}
+anova(lm.lac.dur.mult.biome)
+```
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+## AIC
+
+* AIC goes down by 318.0-317.7=`r 318.0-317.7`
+* This is a very very slight improve
+
+```{r,echo = -c(1:2)}
+library(bbmle)
+logit.null.alldat <- lm(fat.logit ~ 1, data = milk2)
+
+AICtab(logit.null.alldat,
+       lm.lac.dur.add.biome, 
+       lm.lac.dur.mult.biome,
+      logit.lac.duration.all,base = T)
+```
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+
+# Bayesian
+```{r}
+
+# library(MCMCglmm)
+# 
+# 
+# lm.lac.dur.MCMC <- MCMCglmm(fat.logit ~ log(lacat.mo.NUM),
+#                             data = milk2[,])
+# 
+# plot(lm.lac.dur.MCMC)
+```
+
+
+
+```{r}
+# display(digits = 8)
+# milk3 <- milk3
+# lm.lac.dur.logit <- lm(fat.logit ~ log(lacat.mo.NUM),
+#                        data = milk3)
+# 
+# milk3$resids <- resid(lm.lac.dur.logit)
+# 
+# milk3$resids.sq <- milk3$resids^2
+# 
+# sum(milk3$resids.sq)
+
+
+```
+
+ 
