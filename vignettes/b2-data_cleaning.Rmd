@@ -1,0 +1,363 @@
+---
+title: "b) Data cleaning"
+author: "Nathan Brouwer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warnings = FALSE)
+```
+
+## Introduction
+
+In this tutorial we'll 
+
+* load data from Skibiel et al 2013 
+* fix some typos that were introduced during data preparation
+* clean up some columns of numeric data that contain character data
+* save the data as a .csv for future use
+
+
+### Important functions used
+
+* read.csv
+* is.na
+* grep
+* gsub
+* as.numeric
+* dplyr::select
+* dplyr::rename
+* write.csv
+
+
+
+### Original Data
+
+**Skibiel et al 2013.**  The evolution of the nutrient composition of mammalian milks.  Journal of Animal Ecology 82: 1254-1264.  https://doi.org/10.1111/1365-2656.12095 
+
+
+
+## Preliminaries
+
+### Loading the mammalsmilk package
+
+If you haven't already, download the mammalsmilk package from GitHub (note the "S" between mammal and milk).  This is commented out in the code below - only run the code if you have never downloaded it before, or haven't recently (in case its been updated)
+
+```{r}
+# install_github("brouwern/mammalsmilk")
+```
+
+You can then load the package with library()
+```{r}
+library(mammalsmilk)
+```
+
+We'll start with the data in a raw form.  This is most easily accessed using
+```{r}
+data("milk_raw")
+```
+
+The originally .csv file is called "Skibiel_mammalsmilk_raw.csv".  See the preceding vignette on data access for how to find these files and tips on loading .csv files if you need to practice this.
+
+### Packages
+
+We'll use the following packages.  You'll need to download them if you haven't already.  I'd try just loading them with library() first (in the next section), then installing if needed.
+
+```{r}
+# install.packages("dplyr")
+```
+
+
+```{r}
+library(dplyr)
+```
+
+
+
+
+### Data preparation
+
+The raw data is from a word file of appendices from the original paper. 
+
+* Table S1. Milk composition of mammals at mid-lactation
+* Table S2. Ecology and life histories of mammals whose milk composition has been described
+
+I pasted the data by hand into Excel and saved it as a .csv file. Once in .csv form it can be loaded into R and further cleaned up.  (In the future I will re-do this all in R).
+
+
+
+## Data cleaning
+
+The data are a bit rough because they were formatted to be a table in a paper.  There's lots of text within cells added as annotations, and probably some errors due to switching from a table in a word doc to .csv.
+
+### Mannually fix incorrect NAs
+
+There are 2 NA values in my "fat" column that shouldn't be there; they should be valid numeric entries.  I use the following code to
+
+* Identify the location of the NAs with is.na()
+* Identify the specific row of data by using which() to ID the specific species with an NA for fat
+* Overwrite the NA with the correct data using row indexing
+    + ie "dat[i.H.niger,"fat"] <- 5.0"
+
+Note that is.na() returns TRUE/FALSE values; "TRUE" acts like specific index when you use it for row indexing.  So, even though "i.NA" is a vector of TRUES and FALSE, milk_raw$spp[i.NA]" returns just the two species that match the "TRUES" 
+
+(There are probably tidyverse ways of doing this but I haven't looked into it.)
+
+
+
+```{r}
+# Look at fat column
+summary(milk_raw$fat)
+
+# Find NAS
+i.NA <- is.na(milk_raw$fat)
+
+#Identify the species w/ NAs
+milk_raw$spp[i.NA]
+
+# Extract the indexes of the appropriate species
+i.H.niger   <- which(milk_raw$spp == "Hippotragus niger")
+i.C.elaphus <- which(milk_raw$spp == "Cervus elaphus hispanicus")
+
+#Overwrite the bad values with correct values
+milk_raw[i.H.niger,"fat"] <- 5.0
+milk_raw[i.C.elaphus,"fat"] <- 12.6
+```
+
+
+
+### Clean texts from numeric variables
+
+There are some text annotations from the raw data still hanging out in the dataframe.  I will use "regular expressions" to clean these up.  Regular expression take practice to use but there are many resources online for learning about them  (Cleaning up asterisks (*), as below, is even a little trickier).
+
+What follows is just a brief snapshot into this feature of R.  R is known, however, for not having stellar basic regular expression features.  Some tools in the tidyverse are available to make things less painful, but I haven't switched to them yet.
+
+
+#### Locate unwanted characters with grep()
+
+There are letters, commas, and asterisks that were annotations in the original datafile.  Easy to remove with find-replace, but also very easy with gsub(), with not chance of changing anything else in your spreadsheet you don't want
+
+Look at all of the protein column; those asterisks are a problem.  There's also an "s" in one cell.
+```{r}
+summary(milk_raw$protein)
+```
+
+
+* Use grep() to find the index of things
+* "[a-zA-Z]" = "find all letter, lower and uppercase"
+
+```{r}
+i.letters <- grep("[a-zA-Z]",milk_raw$protein)
+
+milk_raw$protein[i.letters]
+```
+
+There's the "S". 
+
+```{r}
+#these are equivalent for the simple case of a single letter
+i.S <- grep("S",milk_raw$protein)  #no brackets
+i.S <- grep("[S]",milk_raw$protein)#brackets
+
+milk_raw$protein[i.S]
+
+```
+
+### Replace unwanted characters with gsub()
+
+```{r}
+milk_raw$protein <- gsub("[a-zA-Z]", #pattern
+                    "",         #replace
+                    milk_raw$protein)#data
+```
+
+Check
+```{r}
+grep("[a-zA-Z]",milk_raw$protein)
+```
+
+
+### Use the gsub() command to replace "special" characters 
+
+
+#### Asterisks: "*"
+
+* Asterisks are a "special character" for regular expressions
+* These can be tricky
+* Have to put \\ in front of it
+
+```{r}
+milk_raw$protein <- gsub("\\*","",milk_raw$protein)
+```
+
+Check
+```{r}
+grep("\\*",milk_raw$protein)
+```
+
+#### COmmas ","
+
+Commas are also species characters
+
+```{r}
+milk_raw$protein <- gsub("\\,","",milk_raw$protein)
+```
+
+Check
+```{r}
+grep("\\,",milk_raw$protein)
+```
+
+
+### Check for spaces
+
+These are frequent typos in data
+
+```{r}
+grep(" ", milk_raw$protein)
+```
+ 
+ 
+but luckily none!
+ 
+ 
+### Convert character data to numeric data
+
+* Because there were non-numeric characters (S, a command, *) in the column, are loaded "protein" as character data; basically it treated it as words/symbols but not numbers.
+* We now need to convert it back to numbers
+* This is done with the command as.numeric()
+* Converting back and forth can sometimes cause problems, so its good to put the converted info in a new column to check against the old
+
+ 
+```{r}
+milk_raw$protein.num <- as.numeric(milk_raw$protein)
+```
+
+Compare old and new columns
+
+```{r}
+head(milk_raw[,c("protein.num","protein")])
+tail(milk_raw[,c("protein.num","protein")])
+```
+
+### Clean other columns
+
+Check other columns
+```{r}
+summary(milk_raw[,c("sugar","energy")])
+```
+
+#### Sugar
+
+* The sugar column has "<" and letters.  
+* I can put anything I want removed inside the brackets
+    + "[a-zA-Z<]"" will get rid of the letters and "<"
+
+
+```{r}
+summary(milk_raw$sugar)
+```
+
+Remove letters and "<"
+```{r}
+milk_raw$sugar <- gsub("[a-zA-Z<]","",milk_raw$sugar)
+```
+
+Convert and check
+```{r}
+milk_raw$sugar.num <- as.numeric(milk_raw$sugar)
+
+head(milk_raw[,c("sugar.num","sugar")])
+
+```
+
+
+
+#### Energy
+
+```{r}
+#The followign are equivalent
+summary(milk_raw[,c("energy")])
+summary(milk_raw$energy)
+
+#clean
+milk_raw$energy <- gsub("[a-zA-Z<]","",milk_raw$energy)
+
+#convert and check
+milk_raw$energy.num <- as.numeric(milk_raw$energy)
+
+head(milk_raw[,c("energy.num","energy")])
+
+
+```
+
+
+## Remove unwanted columns with dplyr
+
+Once we've checked that our data have converted properly from character to numeric, we can remove the old columns of character data using select() and negative indexing.
+```{r}
+milk_raw2 <- milk_raw %>% dplyr::select(-dry.matter,
+                                   -protein,
+                                   -sugar,
+                                   -energy,
+                                   -ref,
+                                   -lactation.stage.orig)
+```
+
+Note that during initial cleaning I only remove variable that are completely redundant; otherwise I leave everything in.
+
+## Change elements common accross column
+
+Remove ".NUM" and ".num" using gsub()
+
+```{r}
+names(milk_raw2) <- gsub(".NUM","",names(milk_raw2))
+names(milk_raw2) <- gsub(".num","",names(milk_raw2))
+```
+
+
+## Rename columns 
+
+To polish a dataset for analysis, I like to shorten the variable names 
+
+```{r}
+milk_raw2 <- milk_raw2 %>% rename(fam = family,
+                                  mass.fem = mass.female,
+                            gest.mo = gestation.month,
+                            lac.mo = lacatation.months,
+                            prot = protein,
+                            dev.birth = dev.stage.at.birth,
+                            ord = order)
+```
+
+
+Let's call this cleaned up data just "milk"
+```{r}
+milk <- "milk_raw2"
+```
+
+
+### Save the cleaned data
+
+We can save our cleaned data using read.csv()
+```{r, eval = F}
+write.csv(milk, "data/skibiel_mammalsmilk.csv",
+          row.names = F)
+```
+
+The data produced by the above workflow are actually internal to the package.  However, I recommend saving the .csv file to wherever you keep your R work and to practice reloading it.
+
+You can load it directly, however, using data("milk")
+
+
+```{r}
+
+```
+

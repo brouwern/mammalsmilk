@@ -1,0 +1,448 @@
+
+---
+title: "Regression: model diagnostics in action"
+author: "Nathan Brouwer | brouwern@gmail.com | @lowbrowR"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = TRUE)
+```
+
+
+```{r, echo = F}
+#load data
+milk2 <- read.csv(file = "Skibiel_clean_milk_focal_column.csv")
+milk3 <- read.csv(file = "Skibiel_clean_milk_focal_genera.csv")
+```
+
+
+
+## All milk fat data
+
+
+```{r, echo = F}
+par(mfrow = c(1,2), 
+    mar = c(4,4,2,1))
+
+#standard plot
+plot(fat ~ log(lac.mo),
+     data = milk,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     main = "plot()")
+
+
+#scattersmooth()
+
+with(milk2, scatter.smooth(y= fat.percent, 
+     x = log(lacat.mo.NUM),
+     main = "scatter.smooth()",
+     lpars = list(col = 3, lwd = 3)))
+```
+
+* There's an important feature of these data that I haven't mentioned ...
+* It has major statistical implications
+* Relates to the variable fat.percent
+
+
+
+## An important feature of these data
+
+
+```{r, echo = F}
+par(mfrow = c(1,2), mar = c(4,4,2,1))
+ylim. <- c(0,100)
+#standard plot
+plot(fat.percent ~ log(lacat.mo.NUM),
+     data = milk2,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     ylim = ylim.,
+     main = "plot()")
+
+
+#scattersmooth()
+
+with(milk2, scatter.smooth(y= fat.percent, 
+     x = log(lacat.mo.NUM),
+     main = "scatter.smooth()",
+          ylim = ylim.,
+     lpars = list(col = 3, lwd = 3)))
+```
+
+* There's an important feature of these data that I haven't mentioned ...
+* It has major statistical implications
+* Relates to the variable fat.percent
+
+
+
+
+
+
+## An important feature of these data: 
+### Percentages are bounded between 0% and 100%
+
+
+```{r, echo = F}
+par(mfrow = c(1,2), mar = c(4,4,2,1))
+ylim. <- c(0,100)
+#standard plot
+plot(fat.percent ~ log(lacat.mo.NUM),
+     data = milk2,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     ylim = ylim.,
+     main = "plot()")
+abline(h = 1,lwd = 4, col = 2)
+abline(h = 100,lwd = 4, col = 2)
+
+
+#scattersmooth()
+
+with(milk2, scatter.smooth(y= fat.percent, 
+     x = log(lacat.mo.NUM),
+     main = "scatter.smooth()",
+          ylim = ylim.,
+     lpars = list(col = 3, lwd = 3)))
+abline(h = 1,lwd = 4, col = 2)
+abline(h = 100,lwd = 4, col = 2)
+
+```
+
+
+
+
+
+
+## Percentages are bounded between 0% and 100%
+
+* A regression model won't respect this
+* We can try to account for this using "quadratic term" 
+  + square the predictor variable
+  + fat ~ log(lacat.mo.NUM) + log(lacat.mo.NUM)^2
+  
+
+
+### Fit quadratic model
+
+* Syntax for adding a squared term is annoying
+    + Wrap squared term in "I(...)"
+    + lm(fat.percent ~ log(lacat.mo.NUM) + I(log(lacat.mo.NUM)^2)
+* Not: squaring a term that is already logged results in a somewhat strange model when you think about the math...
+
+```{r}
+#Null model
+lm.null.alldat <- lm(fat.percent ~ 1, data = milk2)
+
+
+#refit lactation duration model to all data
+lm.lac.dur.alldat <- lm(fat.percent ~ log(lacat.mo.NUM), data = milk2)
+
+#add squared term
+lm.lac.dur.squared.alldat <- lm(fat.percent ~    
+                        log(lacat.mo.NUM) +                        I(log(lacat.mo.NUM)^2), 
+                                data = milk2)
+
+```
+
+
+
+# Look at diagnostics of linear model
+
+```{r, echo =-1}
+par(mfrow = c(2,2))
+plot(lm.lac.dur.alldat)
+```
+
+
+
+
+# QQ plot for normality is horrible!
+
+```{r, echo =-1}
+par(mfrow = c(1,1))
+plot(lm.lac.dur.alldat, which = 2)
+```
+
+
+
+
+
+# Does including x^2^ quadratic term improve model?
+
+* Maybe a tiny bit...
+
+```{r, echo =-1}
+par(mfrow = c(1,1))
+plot(lm.lac.dur.squared.alldat, which = 2)
+```
+`
+
+
+
+
+### Summary of model with square term
+
+* Note "I(log(lacat.mo.NUM)^2)" term
+* This is highly significant
+
+```{r}
+summary(lm.lac.dur.squared.alldat)
+```
+
+
+
+### Compare models w/ anova()
+
+* The original and squared model are "nested"
+* Test with anova()
+* x^2 term is significant
+
+```{r}
+anova(lm.lac.dur.squared.alldat,
+      lm.lac.dur.alldat)
+```
+
+
+
+
+
+
+### Compare models w/ AIC
+
+* Can compare multiple models easily w/AIC
+    + Null: . ~ 1
+    + Alt1: . ~ log(lac.dur)
+    + Alt2: . ~ log(lac.dur) +log(lac.dur)^2
+
+```{r, echo = -1}
+library(bbmle)
+AICtab(lm.lac.dur.squared.alldat,
+      lm.lac.dur.alldat,
+      lm.null.alldat)
+```
+
+
+
+
+
+### Look at model fit 
+
+* Does the model fit the data well?
+
+```{r, echo = F}
+#plot
+par(mfrow = c(1,2), mar = c(4,4,2,1))
+ylim. <- c(0,100)
+
+# plot linear model
+plot(fat.percent ~ log(lacat.mo.NUM),
+     data = milk2,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     ylim = ylim.)
+mtext(text = "Linear: fat ~ log(lac)")
+abline(h = 1,lwd = 4, col = 2)
+abline(h = 100,lwd = 4, col = 2)
+abline(lm.lac.dur.alldat, col = 3, lwd = 3)
+
+# plot quadratic model
+plot(fat.percent ~ log(lacat.mo.NUM),
+     data = milk2,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     ylim = ylim.)
+mtext(text = "Non-lin: fat ~ log(lac)+log(lac)^2")
+abline(h = 1,lwd = 4, col = 2)
+abline(h = 100,lwd = 4, col = 2)
+
+## plot predictions from x^2 model
+preds <- predict(lm.lac.dur.squared.alldat)
+col.name <- "log(lacat.mo.NUM)"
+x <- lm.lac.dur.squared.alldat$model[,col.name]
+
+
+#put in order so it plots right
+points(preds[order(x)] ~ x[order(x)], 
+       type = "l",
+       col= 3,
+       lwd = 3)
+
+```
+
+
+
+
+### Add cubic term
+
+* . ~ x + x^2 + x^3
+* This is generally a bad idea...
+  + Results in "overfitting"
+  + Hard to justify what biological process results in a x^3 term
+
+```{r, echo = F}
+par(mfrow = c(1,2))
+# Add cubic term
+lm.lac.dur.cubed.alldat <- lm(fat.percent ~    
+                        log(lacat.mo.NUM) +                        I(log(lacat.mo.NUM)^2) +
+                          I(log(lacat.mo.NUM)^3), 
+                                data = milk2)
+
+# plot quadratic model
+plot(fat.percent ~ log(lacat.mo.NUM),
+     data = milk2,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     ylim = ylim.)
+mtext(text = "Non-lin: fat ~ log(lac)+log(lac)^2")
+abline(h = 1,lwd = 4, col = 2)
+abline(h = 100,lwd = 4, col = 2)
+
+## plot predictions from x^2 model
+preds <- predict(lm.lac.dur.squared.alldat)
+col.name <- "log(lacat.mo.NUM)"
+x <- lm.lac.dur.squared.alldat$model[,col.name]
+
+
+#put in order so it plots right
+points(preds[order(x)] ~ x[order(x)], 
+       type = "l",
+       col= 3,
+       lwd = 3)
+
+
+# plot cubic model
+plot(fat.percent ~ log(lacat.mo.NUM),
+     data = milk2,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     ylim = ylim.)
+mtext(text = "Non-lin: fat ~ ...log(lac)^3")
+abline(h = 1,lwd = 4, col = 2)
+abline(h = 100,lwd = 4, col = 2)
+
+## plot predictions from x^2 model
+preds <- predict(lm.lac.dur.cubed.alldat)
+col.name <- "log(lacat.mo.NUM)"
+x <- lm.lac.dur.squared.alldat$model[,col.name]
+
+
+#put in order so it plots right
+points(preds[order(x)] ~ x[order(x)], 
+       type = "l",
+       col= 3,
+       lwd = 3)
+
+
+```
+
+
+
+
+# Stop the maddness: transform percentages
+
+* log transformations are very common for continuous data
+* for percentage data, the "logit transformation" is what's needed
+  + everyone we did previously should've been done w/logit transform
+* people often do an "arcsine" transformation but this is being outmoded
+
+
+
+
+
+## Implement logit transformation
+
+* logit transformation functions are in car and arm packages
+* transform bounded percentages [0,100] to unbounded variables
+* the math is in the same next of the woods as logistic regression
+
+```{r}
+library(arm)
+milk2$fat.logit <- logit(milk2$fat.percent/100)
+
+```
+
+
+
+
+## Compare distribution of the variables
+
+* Improves normality of raw data
+* (note: we really care about normality of residuals!)
+
+```{r, echo = -1}
+par(mfrow = c(1,2))
+hist(milk2$fat.percent,main = "fat.percent")
+hist(milk2$fat.logit, main = "logit(fat.percent)")
+```
+
+
+
+
+
+### Model logit and compare to raw percent
+
+* We can't compare logit and raw percentages w/ a significance test b/c the models aren't nested
+* can use AIC
+
+```{r, echo = F}
+# Model
+logit.lac.duration.all <- lm(fat.logit ~ log(lacat.mo.NUM), 
+                             data = milk2)
+```
+
+```{r, echo = F}
+summary(logit.lac.duration.all)
+
+```
+
+
+
+
+
+```{r, echo = F}
+par(mfrow = c(1,1))
+plot(fat.logit ~ log(lacat.mo.NUM),
+     data = milk2,
+     #lab = "Log(lactation dur.)",
+     pch = 18,
+     cex =2,
+     main = "logit(fat.percent) ~ log(lactation duration)")
+abline(logit.lac.duration.all, col = 3, lwd = 3)
+
+```
+
+
+
+# Diagnostics for logit model
+
+```{r}
+par(mfrow = c(2,2))
+plot(logit.lac.duration.all)
+```
+
+
+
+# qqplot Diagnostics for logit model
+
+```{r}
+par(mfrow = c(1,1))
+plot(logit.lac.duration.all, which = 2)
+```
+
+
+

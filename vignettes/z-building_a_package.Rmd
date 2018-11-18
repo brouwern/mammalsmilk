@@ -1,10 +1,12 @@
 ---
 title: "z) Creating this package"
 author: "Nathan Brouwer"
-date: "November 12, 2018"
-output: html_document
-editor_options: 
-  chunk_output_type: console
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -19,6 +21,7 @@ The following code outlines the key steps I did, principally using the usethis p
 
 ## Packages
 
+I use these packages for setting things up
 ```{r, eval = F}
 library(devtools)
 library(usethis)
@@ -29,21 +32,21 @@ library(here)
 
 I create a shroom git repo then cloned into it by hand by creating an RStudio Project.
 
-## Set up package
+## Set up package with usethis
 
 I then used create_package() within my project directory to build the basic package infrastructure  This overights the initial project (after a handy prompt in the console).
 ```{r eval = F}
 create_package(path = getwd())
 ```
 
-## Create vignette infrastructure
+### Create vignette infrastructure
 
 Create a vignette infrastructure and dummy vignette
 ```{r, eval = F}
-use_vignette("Introduction")
+usethis::use_vignette("g-linear_reg_diagnostics")
 ```
 
-## Create "readme" and "news" files
+### Create "readme" and "news" files
 
 ```{r, eval = F}
 use_readme_md()
@@ -52,7 +55,7 @@ use_news_md()
 
 
 
-## Create git ignore
+### Create git ignore
 
 Am not sure how to use this properly yet
 
@@ -61,7 +64,7 @@ use_git_ignore(".pdf", directory = ".")
 ```
 
 
-## Add required packages
+### Add required packages
 
 ```{r, eval = F}
 use_package("dplyr", "Imports")
@@ -70,31 +73,37 @@ use_package("ggplot2", "Imports")
 use_package("nlme", "Imports")
 use_package("lme4", "Imports")
 use_package("bbmle", "Imports")
+use_package("RCurl", "Imports")
+use_package("GGally", "Imports")
+use_package("broom", "Imports")
+
+use_package("arm", "Imports")
+
 ```
 
 
 
-## Don't save/load user workspace between sessions
+### Don't save/load user workspace between sessions
 
 ```{r, eval = F}
 use_blank_slate()
 ```
 
 
-## Use roxygen for documentation
+### Use roxygen for documentation
 ```{r, eval = F}
 use_roxygen_md()
 ```
 
 
-## Package-level documents
+### Package-level documents
 "Adds a dummy .R file that will prompt roxygen to generate basic package-level documentation. "
 ```{r, eval = F}
 use_package_doc()
 ```
 
 
-## Use pkgdown
+### Use pkgdown
 
 For making front end website
 
@@ -170,12 +179,12 @@ use_r("milk_fat")
 #use_data_raw()
 ```
 
-## Spell check
+### Spell check
 
 use_spell_check
 
 
-## Other potentially useful functions
+### Other potentially useful usethis functions
 
 use_r() #Create or edit a .R file
 
@@ -202,3 +211,26 @@ edit_git_ignore()
 
 use_directory()
 Use a directory
+
+
+
+
+## devtools functions
+
+```{r, eval = F}
+devtools::build_vignettes()
+```
+
+clean_vignettes() 
+
+## pckgdown functions
+
+```{r, eval = F}
+pkgdown::build_site()
+```
+
+
+```{r}
+check_failures
+```
+

@@ -1,25 +1,21 @@
 ---
-title: 'Data visualization & exploration with PCA'
-author: "brouwern@gmail.com"
-date: "February 12, 2017"
-output:
-  html_document:
-    toc: yes
-    toc_depth: 2
-  word_document:
-    toc: yes
-    toc_depth: '2'
-editor_options: 
-  chunk_output_type: console
+title: 'e) Data visualization & exploration with PCA'
+author: "Nathan Brouwer | brouwern@gmail.com | @lowbrowR"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Explorating data with PCA
+## Exploring data with PCA
 
-**This tutorial is optional**
+**This tutorial is optional, some what esoteric, and not well organized**
 
 * PCA is a very common "dimension reduction" tool
 * It can take several correlated variables and extact a smaller number of uncorrelated, "latent" variables
@@ -42,11 +38,29 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Load cleaned data
 
+
+```{r}
+# install_github("brouwern/mammalsmilk")
+```
+
+You can then load the package with library()
+```{r}
+library(mammalsmilk)
+```
+
+
 Load data cleaned in previous tutorial
 ```{r}
-#Data cleaned in previous file
-dir. <- here::here("data/","skibiel_mammalsmilk.csv")
-milk <- read.csv(file =dir.)
+data("milk")
+```
+
+
+### Packages
+
+```{r}
+library(ggplot2)
+library(cowplot)
+library(dplyr)
 ```
 
 
@@ -54,15 +68,25 @@ milk <- read.csv(file =dir.)
 
 Because the variables are on very different scales it helps to transform them
 
-```{r}
-dat$gest.mo.l10 <- log10(dat$gest.month.NUM)
-dat$repro.l10 <- log10(dat$repro.output)
-dat$mass.litter.l10 <- log10(dat$mass.litter)
-dat$lact.mo.l10 <- log10(dat$lacatation.months)
-dat$mass.fem.l10 <- log10(dat$mass.female)
+The old-school way of doingthis might be to do it column by column
+```{r, eval = F}
+milk$gest.mo.log <- log10(milk$gest.month)
+milk$repro.log <- log10(milk$repro.output)
+milk$mass.litter.log <- log10(milk$mass.litter)
+milk$lact.mo.log <- log10(milk$lacat.mo)
+milk$mass.fem.log <- log10(milk$mass.fem)
 
 ```
 
+In dplyr you can use the mutate() function from dplyr
+
+```{r}
+milk <- milk %>% mutate(gest.mo.log = log(gest.month),
+                repro.log = log(repro.output),
+                mass.litter.log = log(mass.litter),
+                lact.mo.log = log(lacat.mo),
+                mass.fem.log = log(mass.fem))
+```
 
 
 
@@ -74,14 +98,15 @@ dat$mass.fem.l10 <- log10(dat$mass.female)
 * Instead you can only use one predictor at a time
 * These plots also indicate at curious cloud of points that typically occurs below the main point mass.
 ```{r}
-pairs(dat[,c("gest.mo.l10",
-          "repro.l10",
-    "mass.litter.l10",
-    "lact.mo.l10",
-    "mass.fem.l10")],
+pairs(milk[,c("gest.mo.log",
+          "repro.log",
+    "mass.litter.log",
+    "lact.mo.log",
+    "mass.fem.log")],
     lower.panel = NULL)
 ```
 
+Similar functionality can be done in ggplot using GGally::ggpairs()
 
 ## PCA on predictor (x) variables
 
@@ -95,12 +120,12 @@ pairs(dat[,c("gest.mo.l10",
 Run the PCA with princomp()
 ```{r}
 #principal compoents
-pca.x.vars <- princomp(~  gest.mo.l10+
-                         repro.l10+
-    mass.litter.l10+
-    lact.mo.l10+
-    mass.fem.l10,
-  data = dat)
+pca.x.vars <- princomp(~  gest.mo.log+
+                         repro.log+
+    mass.litter.log+
+    lact.mo.log+
+    mass.fem.log,
+  data = milk)
 
 
 
@@ -127,16 +152,18 @@ The biplot tells us that a major axis of variation is female mass and lactation 
 
 PCA generates as many latent variables as there are original variables.  Usually only the first few are useful.  This codes displays the 2nd vs. the 3rd PCs
 ```{r}
-biplot(pca.x.vars, choices = c(2,3), col = c(0,2))
+biplot(pca.x.vars, 
+       choices = c(2,3), 
+       col = c(0,2))
 ```
 
 
 
 
 
-What a biplot is plotting are "PCA" scores.  We can plot these by hand by extracting them from the list embedded in the PCA output object.  I'll use qplot to plot
+What a biplot is plotting are "PCA" scores.  We can plot these by hand by extracting them from the list embedded in the PCA output object.  I'll use qplot() from ggplot to plot this
 ```{r}
-library(ggplot2)
+
 qplot(y = pca.x.vars$scores[ ,"Comp.2"] ,
       x = pca.x.vars$scores[ ,"Comp.1"] )
   
@@ -148,7 +175,7 @@ And add color code them to identify groups.  It looks like that outlying group a
 
 qplot(y = pca.x.vars$scores[ ,"Comp.2"] ,
       x = pca.x.vars$scores[ ,"Comp.1"] ,
-      color = dat$order)
+      color = milk$ord)
   
     
 
@@ -158,12 +185,12 @@ qplot(y = pca.x.vars$scores[ ,"Comp.2"] ,
 I can add labels to confirm
 ```{r}
 
-labs <- gsub("ontia","",dat$order)
-labs <- gsub("ata","",dat$order)
+labs <- gsub("ontia","",milk$ord)
+labs <- gsub("ata","",milk$ord)
 
 qplot(y = pca.x.vars$scores[ ,"Comp.2"] ,
       x = pca.x.vars$scores[ ,"Comp.1"] ,
-      color = dat$order) +
+      color = milk$ord) +
   annotate(geom = "text", 
            y = pca.x.vars$scores[ ,"Comp.2"] ,
       x = pca.x.vars$scores[ ,"Comp.1"] ,
@@ -176,20 +203,20 @@ qplot(y = pca.x.vars$scores[ ,"Comp.2"] ,
 
 Make new variable for outliers
 ```{r}
-i.weirdos <- which(dat$order %in% c("Monotremata"  #monotremes
+i.weirdos <- which(milk$ord %in% c("Monotremata"  #monotremes
 ,"Diprotodontia"  #marsupials
 ,"Didelphimorphia"#opossums
 ,"Dasyuromorphia"#tasmanian devil)
 ,"Peramelemorphia" #bandicoots
 )) 
 
-dat$Australia <- "other"
+milk$Australia <- "other"
 
-dat$Australia[i.weirdos] <- "Australia"
+milk$Australia[i.weirdos] <- "Australia"
 
 qplot(y = pca.x.vars$scores[ ,"Comp.2"] ,
       x = pca.x.vars$scores[ ,"Comp.1"] ,
-      color = dat$Australia) 
+      color = milk$Australia) 
 ```
 
 
@@ -197,7 +224,7 @@ As noted above,  PCA generates as many latent variables as there are original va
 ```{r}
 qplot(y = pca.x.vars$scores[ ,"Comp.3"] ,
       x = pca.x.vars$scores[ ,"Comp.2"] ,
-      color = dat$Australia) 
+      color = milk$Australia) 
 ```
 
 
@@ -205,7 +232,7 @@ And the 1st vs. the 3rd
 ```{r}
 qplot(y = pca.x.vars$scores[ ,"Comp.3"] ,
       x = pca.x.vars$scores[ ,"Comp.1"] ,
-      color = dat$Australia) 
+      color = milk$Australia) 
 ```
 
 
@@ -223,20 +250,20 @@ For each mammal species the authors found data on 5 different aspects of their m
 * protein %
 * sugar %
 * energy 
-* dry.matter
+* dry.matter  #removed somewhere - need to add back
 
 These things are frequently correlated.  We can see this in a "pairs" plot
 
 ```{r}
-pairs(dat[,c("fat","protein.num",
-            "sugar.num","energy.num",
-            "dry.matter")],lower.panel = NULL)
+pairs(milk[,c("fat","prot",
+            "sugar","energy")],
+      lower.panel = NULL)
 ```
 
 You can see that the percentage data (fat, protein, sugar) are negatively correlated b/c if a high fat percent must have a low fat percent, etc.  These different columns of data therefore do not have independent information.  PCA allows us to combine them to look for overal axes of variation.
 
 
-# Run a PCA
+## Run a PCA
 
 * There are 2 base R functions for PCA
     + princomp
@@ -245,10 +272,10 @@ You can see that the percentage data (fat, protein, sugar) are negatively correl
 
 
 ```{r}
-pca.y.vars <- princomp(~ fat + protein.num +
-                         sugar.num + energy.num +
-                         dry.matter, 
-                       data = dat)
+milk.noNA <- na.omit(milk)
+pca.y.vars <- princomp(~ fat + prot +
+                         sugar + energy , 
+                       data = milk.noNA)
 
 ```
 
@@ -259,12 +286,69 @@ pca.y.vars <- princomp(~ fat + protein.num +
 * These response variables is not a particularly great dataset for this because the %s are all so highly correlated.
 
 ```{r}
-biplot(pca.y.vars, cex = 0.9,
+biplot(pca.y.vars, 
+       cex = 0.9,
        main = "Milk y vars")
 ```
 
 
+Make into dataframe
+```{r}
+df <- data.frame(Comp.3 = pca.y.vars$scores[ ,"Comp.3"] ,
+                 Comp.2 = pca.y.vars$scores[ ,"Comp.2"] ,
+                 Comp.1 = pca.y.vars$scores[ ,"Comp.1"],
+                 milk.noNA)
+```
 
 
 
+Are the outliers Australian?
+
+```{r}
+qplot(y = Comp.2 ,
+      x = Comp.1,
+      color = Australia,
+      data = df)
+```
+
+
+Code by biome - outliers are Aqutic
+```{r}
+qplot(y = Comp.2 ,
+      x = Comp.1,
+      color = biome,
+      data = df) 
+```
+
+
+
+Code by biome and diet - most (all?) aquatic organismsin the dataset are also carnivores, because most aquatic mammals are carnivores (exceptions?  Manatees and ...)
+
+
+```{r}
+qplot(y = Comp.2 ,
+      x = Comp.1,
+      color = biome,
+      shape = diet,
+      data = df) 
+```
+
+
+
+Facet by diet
+
+```{r}
+qplot(y = Comp.1 ,
+      x = Comp.3,
+      color = biome,
+      shape = diet,
+      #size = log(mass.fem),
+      data = df,
+      facets = Australia ~ diet) 
+```
+
+
+```{r}
+
+```
 

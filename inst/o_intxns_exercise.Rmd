@@ -1,0 +1,1026 @@
+---
+title: "o) Interactions"
+author: "Nathan Brouwer | brouwern@gmail.com | @lowbrowR"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      strip.white = FALSE)
+```
+
+
+
+# Introduction
+
+## Original Data
+
+**Skibiel et al 2013.**  Journal of Animal Ecology.  The evolution of the nutrient composition of mammalian milks. 82: 1254-1264.
+
+
+## Load data
+
+```{r}
+#setwd("C:/Users/lisanjie2/Desktop/TEACHING/1_STATS_CalU/1_STAT_CalU_2016_by_NLB/1_STAT_Duq_2017/HOMEWORK/Duq_Biostats_Homework_4_Milk_regression/homework4_RMD_vs2")
+
+setwd("C:/Users/lisanjie2/Dropbox/Duq_BioStats2017/week6_regressionIII/wk6_Rmd")
+
+dat2 <- read.csv("milk_subset.csv")
+```
+
+## Relative lactation duration
+
+* "Relative lactation duration" is an important predictor in the Skibiel milk evolution paper
+* Create a variable for "relative lactation length."  
+* Use the with() command to make the code clean
+
+```{r}
+dat2$rel.lactation <- with(dat2, lacatation.months/(gestation.month + 
+                                                      lacatation.months))
+```
+
+
+## Transformation
+
+As the authors did, Log transform relative lactation
+```{r}
+dat2$rel.lact.log10 <- log10(dat2$rel.lactation)
+```
+
+
+
+
+# Plotting
+
+## Plot log10(fat) ~ rel.lactation
+
+* No transformation of the predictor  (x) variable.
+* Note the triangle shape of the data.  
+    * This forebodes heterogenous variance.
+* I think this is probably better than a log transformation of the x axis
+
+```{r}
+library(ggplot2)
+
+qplot(y = fat.log10,
+      x = rel.lactation,
+      data = dat2) + 
+  ggtitle("no transformation of x")
+```
+
+
+## Add Colors
+
+* "col = diet"
+
+```{r}
+qplot(y = fat.log10,
+      x = rel.lactation,
+      data = dat2,
+      col = diet) + 
+  ggtitle("no transformation of x")
+```
+
+
+
+## Combine Diet categories: pool herbivores and omnivores
+
+* In the model selection tutorial we saw that herbivores and omnivores have almost idential slopes.  
+* For the sake of this next exercise let's combine these two factor levels so we have just 2 diet types
+    + carnivores
+    + other = herbivore + omnivore
+* Doing this for a real paper would have to be very very carefully justified and be obviously designated as a post-hoc exercise
+
+
+Make a copy of diet column
+```{r}
+diet2 <- dat2$diet
+
+```
+
+Look at the column with sumamry()
+```{r}
+summary(diet2)
+```
+
+Try to recode the data using ifelse()
+
+```{r}
+#if the row contains "carnivores", 
+#leave it as carnivore,
+#else change it to other
+#so, ominivore and herbivore now = "other"
+diet2 <- ifelse(diet2 == "carnivore", 
+                "carnivore",
+                "other")
+```
+
+Look at new column
+```{r}
+summary(diet2)
+```
+
+
+What happend?  
+
+* The ifelse() command coverted the data from a factor to character data.  
+* How R handles factors and character data and their conversion will, sooner or later, ruin your day.  Sorry, its just gonna happen.
+* SOLUTION: email me AS SOON AS YOU START HAVING PROBLEMS
+
+The factor() command will turn it back to categorical data
+
+```{r}
+diet2 <- factor(diet2)
+
+summary(diet2)
+```
+
+Add diet2 to dataframe
+```{r}
+dat2$diet2 <- diet2
+```
+
+
+
+# Plot new data w/ combined diet category
+
+* use "shape = " to change the plotting symbol
+```{r}
+qplot(y = fat.log10,
+      x = rel.lactation,
+      data = dat2,
+      col = diet2,
+      shape = diet2) + 
+  ggtitle("no transformation of x")
+```
+
+
+
+# Plot data with smoother
+
+
+# Add smoother
+
+* "+ geom_smooth()" w/ nothing inside
+
+Default is for loess smoothes
+```{r}
+qplot(y = fat.log10,
+      x = rel.lactation,
+      data = dat2,
+      col = diet2,
+      shape = diet2) +
+  geom_smooth()
+```
+
+
+# Add regression line
+
+* add "method = lm" to geom_smooth(...)
+
+```{r}
+qplot(y = fat.log10,
+      x = rel.lactation,
+      data = dat2,
+      col = diet2,
+      shape = diet2) +
+  geom_smooth(method = lm)
+```
+
+What do you notice about the slopes?  
+
+
+
+
+
+
+
+# Model an interaction
+
+
+## Null model:
+
+* Single intercept = mean of y variables
+* No slope
+* Models flat line
+
+```{r}
+m.null <- lm(fat.log10 ~ 1, data = dat2)
+
+#fitted intercept 
+coef(m.null)
+
+#mean of raw data
+mean(dat2$fat.log10)
+
+#summary of model
+summary(m.null)
+```
+
+Plot it in base R
+```{r}
+plot(fat.log10 ~ rel.lactation, data = dat2)
+abline(m.null, col = 2)
+```
+
+
+Plot it in ggplot
+```{r}
+qplot(y = fat.log10,
+      x = rel.lactation,
+      data = dat2) +
+  geom_hline(yintercept = coef(m.null), col = 2)
+
+```
+
+
+**Questions:**
+
+* This intercept is has a  very small p-value; what does that mean?
+* There is no R2 value; why? (see summary(m.null)$r.squared)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWERS:**
+
+
+...
+
+
+
+
+
+## Model w/ a Single slope
+
+* 1 Intercept
+* Slope based on continous predictor, rel.lactation
+* (slope = parameter = coefficient)
+
+
+Fit the model
+```{r}
+m.lactation <- lm(fat.log10 ~ rel.lactation, 
+                  data = dat2)
+
+```
+
+Plot it
+```{r}
+plot(fat.log10 ~ rel.lactation, data = dat2)
+abline(m.lactation)
+```
+
+
+
+Plot it with intercept visible
+```{r}
+plot(fat.log10 ~ rel.lactation, 
+     data = dat2,
+     xlim = c(0, 1))
+abline(m.lactation)
+abline(v = 0, col = 2)
+arrows(y0= coef(m.lactation)[1],
+       y1= coef(m.lactation)[1],
+       x0 = 0.05,x1 = 0, lwd = 3, col = 2, length = 0.1)
+        
+```
+
+
+
+
+
+
+## Model with Two intercepts
+
+* 1 Intercept for carnivorwes
+* 1 intercept for herbivores+omni
+* No slope; models 2 falt lines
+
+```{r}
+m.diet2 <- lm(fat.log10 ~ diet2, data = dat2)
+
+coef(m.diet2)
+
+```
+
+
+
+## Load my plotting function
+```{r}
+source("fnxn_plot_ANCOVA.R")
+```
+
+
+
+Plot it
+```{r}
+par(mfrow = c(1,1))
+plot.ANCOVA(m.diet2, raw.data = dat2,
+x.axis = "rel.lactation")
+
+
+```
+
+
+
+**Question**
+
+* How do you interpret these coefficients
+
+```{r}
+#The "intercept"
+coef(m.diet2)[1]
+
+#diet2other parameter 
+coef(m.diet2)[2]
+
+#Combined
+coef(m.diet2)[1] + coef(m.diet2)[2]
+```
+
+
+
+
+
+
+
+
+### Alternate parameterization
+
+* note "-1"
+* this is called "dropping the intercept"
+
+
+#### Fit alternative parameteraization
+```{r}
+m.diet2.alt <- lm(fat.log10 ~ -1 + diet2, data = dat2)
+
+```
+
+
+#### Compare coefficients
+```{r}
+# original
+coef(m.diet2)
+
+#alternate
+coef(m.diet2.alt)
+
+#for original, add int + diet2other
+coef(m.diet2)[1] + coef(m.diet2)[2]
+
+```
+
+
+
+## Model w/ Two parrallel slopes
+
+* This is an ANCOVA-type model
+* (This term - analysis of covariance - is only really useful is you were taught expliclity about ANCOVA)
+
+```{r}
+m.lact.diet <- lm(fat.log10 ~ rel.lactation + 
+                    diet2, data = dat2)
+
+coef(m.lact.diet)
+```
+
+
+Plot it
+```{r}
+plot.ANCOVA(m.lact.diet)
+```
+
+
+
+
+
+
+## Model Two non-parralel slopes
+
+* Models with an interation term have lines with slopes that are not parralle
+
+### Fully written out interaction model
+```{r}
+m.lact.X.diet <- lm(fat.log10 ~ rel.lactation + 
+                              diet2 +
+                              rel.lactation*diet2,
+                    data = dat2)
+
+coef(m.lact.X.diet)
+```
+
+
+### Equivalent syntax for interaction  model
+
+* R expands out the terms invovled in the interaction
+* we don't have to include any "+"
+```{r}
+m.lact.X.diet <- lm(fat.log10 ~ rel.lactation*diet2, 
+                    data = dat2)
+
+coef(m.lact.X.diet)
+```
+
+
+
+### Plot interaction model
+```{r}
+plot.ANCOVA(m.lact.X.diet)
+```
+
+
+
+# Plot all four models
+
+```{r}
+par(mfrow = c(2,2),
+    mar = c(3,2,2,1))
+
+#1 slope
+plot(fat.log10 ~ rel.lactation, data = dat2)
+abline(m.lactation)
+
+#2 intercepts
+plot.ANCOVA(m.diet2, raw.data = dat2,
+x.axis = "rel.lactation")
+
+#parallel
+plot.ANCOVA(m.lact.diet)
+
+#not-par
+plot.ANCOVA(m.lact.X.diet)
+
+```
+
+
+
+# Compare models with AICtab
+```{r}
+library(bbmle)
+ICtab(type =  "AICc",
+      base = T,
+      logLik = T,
+      m.null, 
+      m.lactation,
+      m.diet2,
+      m.lact.diet,
+      m.lact.X.diet)
+```
+
+**QUESTION**:
+How do we interpret these results?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Interpretation**
+
+* The interaction model "m.lact.X.diet" is technically "best", but just barely
+* The additive model "m.lact.diet" is almost as good and has fewer parameters
+* A typical perspective would be to invoke parsimony and go with the simpler model
+* This is b/c there is little justification (dAICc 0.3) to use a more complex model
+* Advanced AIC techniques allow you to do "model averaging" of multiple good models
+
+
+
+
+# Do AIC results match p values?
+
+## Compare the two "Best" models with anova
+
+"interaction" vs "additive"  models 
+```{r}
+anova(m.lact.X.diet,
+      m.lact.diet)
+```
+
+
+## Compare the 2nd and 3rd "Best" models
+
+"additive" vs. diet only (categorical variable)
+```{r}
+anova(m.diet2,
+      m.lact.diet)
+
+```
+
+**QUESTION**
+HOw do these results compare to the AIC results
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWER**
+
+* m.lact.X.diet vs m.lact.diet (interaction vs. additive) had dAIC of 0.3 and p = 0.12.  THe high -- but not really really high -- matches with the conclusion that the itneraction is not well supported, but not obviously bad
+* m.diet2 vs. m.lact.diet (additive vs. diet only) had dAIC 5.6 and p = 0.006.  Adding lactation to the model improve the model by a good margin (dAIC > 2, p << 0.05)
+
+
+
+# Compare R2 values of each model
+
+* Access r2 from a model summary like this:
+    + summary(m.lact.X.diet)$r.squared
+* Code below is a bit dense b/c I make everything on the fly
+
+```{r}
+data.frame(mod = c("m.lact.X.diet",
+                   "m.lact.diet",
+                   "m.diet2",
+                   "m.lactation"),
+R2 = round(c(summary(m.lact.X.diet)$r.squared
+,summary(m.lact.diet)$r.squared
+,summary(m.diet2)$r.squared
+,summary(m.lactation)$r.squared),2))
+```
+
+**QUESTION**
+Do the changes in R2 match the AIC / p-value story?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWER**
+
+* Yes, but note that a dAIC of ~ 5 and a p < 0.01 corresponded to only a small increase in R2 (0.423 - 0.388 = 0.35).  
+* A large AIC / small p value does not therefore mean that a parameter significantly improves that explanatory power of the model, only that 
+    + For AIC, it makes the model better relative to the next best model
+    + For p, that the coefficient of the model is unlikely to be 0.0
+    
+    
+    
+
+# Look at residuals of "best"" model
+
+```{r}
+par(mfrow = c(2,2))
+plot(m.lact.diet)
+```
+
+**QUESTION**
+Is there any evidence of
+
+* Problems with homogeneity of variance? What graph indicates this?
+* NOrmality of the data?  What graph indicates that?
+* Influential points?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**ANSWER**
+
+* The residual vs. fitted plot is ugly; on the left-hand side the points fall way below where a horizontal line would be.
+* There is no plot for the "normality of the data"; trick question
+* THe qq normal plot tells you about the normality of the residul.  On the left-hand size its look a little bad; It would be interesting to know if the logit transformation improves this at all.
+* There are no outliers
+
+
+
+# Plot Australia and other odd points against "best" model
+
+```{r}
+par(mfrow = c(1,1),
+    mar = c(4,4,1,1))
+plot.ANCOVA(m.lact.X.diet)
+
+i.Aust <- which(dat2$Australia == "Australia")
+points(fat.log10 ~ rel.lactation, data = dat2[i.Aust,], pch = 4)
+
+i.lemur <- which(dat2$lemurs == "lemur")
+points(fat.log10 ~ rel.lactation, data = dat2[i.lemur,], pch = 5)
+
+i.odd.ung <- which(dat2$order == "Perrissodactyla")
+points(fat.log10 ~ rel.lactation, data = dat2[i.odd.ung,], pch = 6)
+
+text(y = dat2$fat.log10[86], 
+     x = dat2$rel.lactation[86],
+labels = 86,adj = 1)
+
+```
+
+
+
+## Label large residuals on scatter plot
+We can label the points flagged in the residual plots like this
+
+
+The indices of the large residuals
+```{r}
+outliers <- c(86,107,108)
+```
+
+
+
+Plot scatterplot w/ modle and label the points with large resiudals
+
+```{r}
+par(mfrow = c(1,1),
+    mar = c(4,4,1,1))
+plot.ANCOVA(m.lact.X.diet)
+
+
+
+text(y = dat2$fat.log10[outliers], 
+     x = dat2$rel.lactation[outliers],
+labels = outliers,adj = 1)
+```
+
+
+
+## Compare data to residual plot
+
+Plot scatter plot with regression lines vs. residvs. fitted plot
+```{r}
+
+#set par to 1 x 2
+par(mfrow = c(1,2),
+    mar = c(4,4,2,1))
+
+#Plot model
+plot.ANCOVA(m.lact.X.diet)
+
+outliers <- c(86,107,108)
+
+#plot text 
+text(y = dat2$fat.log10[outliers], 
+     x = dat2$rel.lactation[outliers],
+labels = outliers,adj = 1)
+
+#plot resid vs fitted plot
+## "which = 1" seletcs the desired plot
+plot(m.lact.X.diet,
+     which = 1)
+
+#horizontal line for comparison
+abline(h=0.0,lty =2)
+
+```
+
+
+# Compare models w/ANOVA
+
+Compare nested models directly
+```{r}
+
+#Null vs. 1 term
+## Null vs. lactation (continous)
+anova(m.null,
+      m.lactation)
+
+## Null vs. diet (categorical)
+anova(m.null,
+      m.diet2)
+
+
+#Model w/1 term vs. 
+
+
+#Full model w/* vs. model w/+
+anova(m.lact.diet,
+      m.lact.X.diet)
+
+
+
+anova(m.lactation,
+      m.lact.diet)
+
+anova(m.diet2,
+      m.lact.diet)
+
+
+
+
+```
+
+
+
+# Call R2, F by hand
+
+* R2 reprents the amount of variation that a model explains
+* Its a ratio of the sum of squares of the model in equation over the sum of squares of null model
+* R2 = SS/RSS.null
+* "SS" is the sume of square from the focal model
+    + Its in the column "SUm of Sq" in the ANOVA table
+* RSS.null represents the total variability in the response variable
+
+R2 from summary command
+```{r}
+summary(m.lact.X.diet)$r.squared
+```
+
+
+
+Compare null to full model
+```{r}
+
+anova(m.null,
+      m.lact.X.diet)
+
+```
+
+Copy the values
+```{r}
+SS <- 11.68
+RSS.null <- 26.906
+```
+
+
+Compute R2
+```{r}
+SS/RSS.null
+```
+
+
+
+### Getting this information from using just anova(model)
+
+anova() on just full model gives slightly different output
+```{r}
+anova(m.lact.X.diet)
+
+```
+
+
+If we add up the rows related to our parameters, we get the total SS for our full model
+```{r}
+#Model terms
+0.2886+8.6593+2.7321
+
+
+
+```
+
+
+If add up everything in the SUm of sq columns, we get the total sum of squares, aka the sum of squares from the null model
+```{r}
+#Model terms + residuals
+15.2258+0.2886+8.6593+2.7321
+
+
+```
+
+
+Dividing these we can get R2
+```{r}
+(0.2886+8.6593+2.7321)/(15.2258+0.2886+8.6593+2.7321)
+```
+
+
+
+
+
+
+
+# F stat
+
+```{r}
+summary(m.lact.X.diet)
+```
+
+
+```{r}
+anova(m.lact.X.diet)
+```
+
+
+```{r}
+anova(m.lact.X.diet,
+      m.lact.diet)
+```
+
+
+```{r}
+#Null vs. Full model w/interaction
+anova(m.lact.X.diet,
+      m.null)
+```
+
+
+
+
+
+
+# Sum of squares by hand
+
+```{r}
+y <- dat2$fat.log10
+mean.y <- mean(dat2$fat.log10)
+
+n <- length(dat2$fat.log10)
+ss.y <- sum((y-mean.y)^2)
+
+
+#equivalent
+var.y <- var(dat2$fat.log10)
+
+var.y*(n-1)
+
+```
+
+# Sum of squares from null model
+```{r}
+##SS from null model
+sum(resid(m.null)^2)
+
+##SS from anova table of null model
+anova(m.null)$"Sum Sq"
+
+
+##Mean sq from null model
+anova(m.null)$"Sum Sq"/anova(m.null)$Df
+
+
+
+```
+
+
+# Sum of squares from full model
+
+Add up entire column
+```{r}
+sum(anova(m.lact.X.diet)$"Sum Sq")
+```
+
+
+#
+```{r}
+anova(m.lact.X.diet)$"F value"[3]
+anova(m.lact.X.diet,
+      m.lact.diet)$"F"[2]
+```
+
+
+```{r}
+anova(m.lact.X.diet,m.lact.diet)
+```
+
+F = (RSS.null - RSS.alt) / [RSS.alt/(df.alt)]
+
+
+```{r}
+anova(m.null)$"Sum Sq"
+```
+
+
+```{r}
+a<-sum(anova(m.lact.X.diet)$"Sum Sq"[1:3])-sum(anova(m.lact.X.diet)$"Sum Sq"[1:2])
+
+
+b<-sum(anova(m.lact.X.diet)$"Sum Sq"[1:3])/123
+
+a/b
+```
+
+
+
+```{r}
+(15.514-15.226)/(15.226/126)
+```
+

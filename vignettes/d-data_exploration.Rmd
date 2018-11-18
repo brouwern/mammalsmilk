@@ -1,17 +1,15 @@
 ---
-title: 'Regression Data Exploration: Skibiel et al 2013 mammals milk data'
-author: "brouwern@gmail.com"
-date: "February 1, 2017"
-output:
-  pdf_document: default
-  word_document:
-    fig_caption: yes
-    fig_height: 5
-    fig_width: 9
-    reference_docx: rmarkdown_template.docx
-editor_options: 
-  chunk_output_type: console
+title: "d) Data Exploration for Regression Analyses"
+author: "Nathan Brouwer | brouwern@gmail.com | @lowbrowR"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = TRUE)
@@ -21,30 +19,29 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white
 
 ## Introduction
 
+The data collated by Skibiel et al contain information on several components of milk, including fat, protein, sugar, and total energetic content ("energy").  Here we'll look at multple y variables, though for most of the subsequent tutorials we'll focus on % of fat in milk
 
-* Several possible response (y) variables: fat, protein etc.
-* We'll Focus on % of fat in milk
-* Several "continous predictors" / covariates (x variables)
-    + size of mom = "mass.fem" 
-    + duration of pregnancy/gestation = "gest.mon"    
-    + how long young fed = "lacat.mo" ("number of lactation months")   
-    + how big are babies = "mass.litter"         
-* Several "categorical predictors"
-    + "diet" = meat, plants, everything
-    + "arid" = desert or other; theory predicts arid environments impact evolution of milk
-    + "biome" = aquatic or terrestrial (includes bats as terrestrial)
+The data also contains several "continous predictors" / covariates (x variables).  These include
+
+* size of mom = "mass.fem" 
+* duration of pregnancy/gestation = "gest.mon"    
+* how long young fed = "lacat.mo" ("number of lactation months")   
+* how big the babies are = "mass.litter"  
+
+THere are also Several "categorical predictors"
+
+* "diet" = meat, plants, everything
+* "arid" = desert or other; theory predicts arid environments impact evolution of milk
+* "biome" = aquatic or terrestrial (includes bats as terrestrial)
+
+Finally, there are columns containing taxonomic information 
+
+* order = order
+* fam = family
+* spp = species
 
 
 ## Preliminaries
-
-### Load data
-```{r, echo = T, display = F}
-#Data cleaned in previous file
-
-dir. <- here::here("data/","skibiel_fat.csv")
-milk <- read.csv(file =dir.)
-```
-
 
 ### Load packages
 
@@ -55,6 +52,30 @@ library(ggpubr)
 library(arm)
 library(dplyr)
 library(GGally)
+```
+
+
+
+### Loading the mammalsmilk package
+
+If you haven't already, download the mammalsmilk package from GitHub (note the "S" between mammal and milk).  This is commented out in the code below - only run the code if you have never downloaded it before, or haven't recently (in case its been updated)
+
+```{r}
+# install_github("brouwern/mammalsmilk")
+```
+
+You can then load the package with library()
+```{r}
+library(mammalsmilk)
+```
+
+
+
+## Load data
+
+
+```{r}
+data("milk")
 ```
 
 
@@ -83,7 +104,7 @@ Tabulate number of families
 table.fam <- table(milk$fam)
 ```
 
-Determine order
+Determine order in data set (not taxonomic order)
 ```{r}
 numeric.order. <- order(table.fam,
                         decreasing = T)
@@ -110,12 +131,12 @@ ggbarplot(data = table.fam,
 
 
 
-Tabulate number of order
+Tabulate number of orders
 ```{r}
 table.ord <- table(milk$ord)
 ```
 
-Determine order
+Determine order (numeric order, not taxonomic order)
 ```{r}
 numeric.order. <- order(table.ord,
                         decreasing = T)
@@ -157,6 +178,8 @@ ggbarplot(data = table.ord,
 ### Plotting scatter plots
 
 To condense my plotting code I will save titles and axis labels to R objects.
+
+Note that for ylab. I insert a line break by putting a backslash in from of an n, for "new line"
 ```{r}
 main. <- "Regression data: continous vs continuous"
 xlab. <- "Continous x: mass of female"
@@ -166,7 +189,7 @@ ylab. <- "Continous y: \nfat contenxt of milk"
 
 #### Look at % milk fat vs. mass of female
 
-* Note that the plot is dominated by whales!
+Note that the plot is dominated an outlier, which the whales!
 
 ```{r}
 ggscatter(y = "fat",
@@ -178,7 +201,7 @@ ggscatter(y = "fat",
 ```
 
 
-A similar graph can be made using the stock ggplot function qplot(), except the variables arenot quoted
+A similar graph can be made using the stock ggplot function qplot(), except the variables are not quoted
 ```{r gg1, eval = F}
 qplot(y = fat,       # no " " !
       x = mass.fem,
@@ -200,6 +223,7 @@ qplot(y = fat,       # no " " !
 * I believe (?) give similar answers, but log10 I think (?) makes biological interpretation easier (???)
 * ggpubr requires hard-coded variables and can't do the log transform "on the fly" in the same way as ggplot/qplot
 
+We can use the mutate() function in dplyr to take the log.
 ```{r}
 milk <- milk %>% dplyr::mutate(mass.fem.log = log(mass.fem))
 ```
@@ -244,7 +268,7 @@ ggscatter(y = "fat",
 
 ## Look at % milk fat by a categorical variable (diet)
 
-Color code diets
+Color-code diets.  This might take a second to render.
 
 ```{r}
 ggscatter(y = "fat",
@@ -260,7 +284,7 @@ ggscatter(y = "fat",
 
 
 
-## Look at % milk fat by diet AND biome
+## Look at % milk fat by diet and biome using facets
 
 * "facets" are a powerful tool in ggplot
 * Turns out ALL of our aquatic spp are carnivores (sorry, no manatees)
@@ -271,7 +295,7 @@ ggscatter(y = "fat",
 ggscatter(y = "fat",
       x = "mass.fem.log",
       color = "diet",
-      facet.by = "biome",
+      facet.by = "biome", # facet command
       data = milk,
       main = main.new,
       ylab = ylab.,
@@ -283,7 +307,7 @@ ggscatter(y = "fat",
 
 ## Boxplots
 
-It can be useful to make boxplot just by categorical variables.  For me, this plot highlights that all carnivores are aquatic, and they have a wide range of fat contents.
+It can be useful to make boxplot just by categorical variables.  For me, this plot highlights that almost all carnivores are aquatic, and they have a wide range of fat contents.
 
 ```{r, echo = T}
 ggboxplot(data = milk,
@@ -303,19 +327,14 @@ ggboxplot(data = milk,
 
 ## Focal data subset: Primates & Relatives
 
+Let's look at just a subset of the data
 * Primates
 * Rodents (this is why we use mouse models)
 * Rabbits
 
 ```{r}
-file. <- "skibiel_primate_fat.csv"
-
-full.path <- here::here("data", #folder
-                        file.)  #file name
-
-primate.milk <- read.csv(file = full.path)
+data("milk_primates")
 ```
-
 
 
 
@@ -329,7 +348,7 @@ Compare original data and our working subset
 dim(milk)
 
 #out working subset
-dim(primate.milk)
+dim(milk_primates)
 ```
 
 
@@ -337,42 +356,46 @@ dim(primate.milk)
 
 Do log transform
 ```{r}
-primate.milk <- primate.milk %>% dplyr::mutate(mass.fem.log = log(mass.fem))
+milk_primates <- milk_primates %>% dplyr::mutate(mass.fem.log = log(mass.fem))
 ```
 
 
-Make scatterplot; ggscatterhist() allows plots to beput in margin
+Make scatterplot; **ggscatterhist()** allows plots to be put in margin
 ```{r, echo = T}
 ggscatterhist(y = "fat",
       x = "mass.fem.log",
-      data = primate.milk,
+      data = milk_primates,
       margin.plot = "boxplot") 
 ```
 
 
 
-## The big animal is a Gorrilla!
+## Add labels
+
+This code is fairly dense.  What I'll do is annotate some selected data points with the species names.
+
+First, make some labels.
 ```{r, echo = T}
 #make column to hold particular spp.names
-primate.milk$spp.focal <- ""
+milk_primates$spp.focal <- ""
 
 #select spp of interest
 ## This is just accross a span of the data
 i.focal <- c(17,18,19,23,30,34,39)
 
 #look at focals
-primate.milk$spp.focal[i.focal]
+milk_primates$spp.focal[i.focal]
 
 #add spp names to spp.focal column
-primate.milk$spp.focal[i.focal] <- as.character(primate.milk$spp[i.focal])
+milk_primates$spp.focal[i.focal] <- as.character(milk_primates$spp[i.focal])
 
-primate.milk$spp.focal <- gsub("(^.*)( )(.*)","\\1",primate.milk$spp.focal)
+milk_primates$spp.focal <- gsub("(^.*)( )(.*)","\\1",milk_primates$spp.focal)
 
 ```
 
 plot with names using some fancier ggplot code.  
 ```{r}
-ggplot(data = primate.milk,
+ggplot(data = milk_primates,
        aes(y = fat,
       x = mass.fem.log)) + 
   geom_point()+
@@ -380,8 +403,6 @@ ggplot(data = primate.milk,
             hjust=1, 
             vjust=0)
 ```
-
-
 
 
 
@@ -397,22 +418,30 @@ ggscatter(y = "fat",
       x = "mass.fem.log",
       add = "reg.line",   #regression line
       conf.int = TRUE,    #confidence int.
-      color = "ord",
-      data = primate.milk) 
+      data = milk_primates) 
 ```
 
+
+Color code by
+```{r}
+ggscatter(y = "fat",
+      x = "mass.fem.log",
+      color = "ord",
+      add = "reg.line",   #regression line
+      conf.int = TRUE,    #confidence int.
+      data = milk_primates) 
+```
 
 
 
 ## Alternate predictors
 
-We can also look at othe predictors
+We can also look at othe predictor besides the size of the mother, such as how many months are spent gestating.
 
 First, we should log transform them.
 
 ```{r}
-primate.milk <- primate.milk %>% dplyr::mutate(mass.fem.log = log(mass.fem),
-    gest.mo.log = log(gest.month),
+milk_primates <- milk_primates %>% dplyr::mutate(gest.mo.log = log(gest.month),
     lacat.mo.log = log(lacat.mo),
     mass.litter.log = log(mass.litter))
 ```
@@ -421,24 +450,23 @@ primate.milk <- primate.milk %>% dplyr::mutate(mass.fem.log = log(mass.fem),
 
 ### Duration of gestation
 
- fat ~ log(gest.month)
-
-* % Fat generally declines as gestation duration increases
-* (the longer animal is pregnant, the less fatty the milk is)
-* longer pregnancy, lower milk fat
+Let's look at a relationship fat ~ log(gest.month)
 
 Compare all data compiled with by order
+
 ```{r, echo = T}
+#all data combined
 no.order <- ggscatter(y = "fat",
       x = "gest.mo.log",
-      data = primate.milk,
+      data = milk_primates,
       #color = "ord",
       add = "reg.line",
       conf.int = TRUE)
 
+#split by order
 by.order <- ggscatter(y = "fat",
       x = "gest.mo.log",
-      data = primate.milk,
+      data = milk_primates,
       color = "ord",
       add = "reg.line",
       conf.int = TRUE)
@@ -446,29 +474,27 @@ by.order <- ggscatter(y = "fat",
 plot_grid(no.order,by.order)
 ```
 
+% Fat generally declines as gestation duration increases.  So, the longer animal is pregnant, the less fatty the milk is.  However, this trend largely disappears when we plot by order.  That is because the Lagomorph data is vary noisy, resulting in a flat line.  The negative trend seen when looking at all of the data combined is largely drive by the fact that lagomorphs tend to have higher milkfat and shorter gestations, and primates have lower milk fat and longer gestations.  This trend is therefore probably driven mostly by differenes between orders, not due to an underlying relationship with gestation.
 
 
 
 
 ## Duration of lactation
 
- fat ~ log(lacat.mo)
-
-* % Fat generally declines as lactation duration increases
-* longer time kids are dependent, lower milk fat
+Another relationship to consider fat ~ log(lacat.mo)
 
 Compare all data compiled with by order
 ```{r, echo = T}
 no.order <- ggscatter(y = "fat",
       x = "lacat.mo.log",
-      data = primate.milk,
+      data = milk_primates,
       #color = "ord",
       add = "reg.line",
       conf.int = TRUE)
 
 by.order <- ggscatter(y = "fat",
       x = "lacat.mo.log",
-      data = primate.milk,
+      data = milk_primates,
       color = "ord",
       add = "reg.line",
       conf.int = TRUE)
@@ -476,7 +502,9 @@ by.order <- ggscatter(y = "fat",
 plot_grid(no.order,by.order)
 ```
 
+Overall, the % Fat generally declines as lactation duration increases.  So, the longer time children are dependent, lower milk fat.
 
+Again, however, there is strong phyolgenetic single.  Within
 
 
 
@@ -492,14 +520,14 @@ plot_grid(no.order,by.order)
 ```{r, echo = T}
 no.order <- ggscatter(y = "fat",
       x = "mass.litter.log",
-      data = primate.milk,
+      data = milk_primates,
       #color = "ord",
       add = "reg.line",
       conf.int = TRUE)
 
 by.order <- ggscatter(y = "fat",
       x = "mass.litter.log",
-      data = primate.milk,
+      data = milk_primates,
       color = "ord",
       add = "reg.line",
       conf.int = TRUE)
@@ -517,10 +545,16 @@ ALl of the graphs of all of the predictors looked basically the same.  One reaso
 We can get a sense for these correlations using the ggpairs() fucntion in the GGally package.
 
 ```{r}
-vars. <- c("fat","gest.mo.log","mass.fem.log","lacat.mo.log"  ,  "mass.litter.log")
-GGally::ggpairs(data = primate.milk,
+vars. <- c("fat","gest.mo.log",
+           "mass.fem.log","lacat.mo.log"  ,  "mass.litter.log")
+GGally::ggpairs(data = milk_primates,
         column = vars.,
         diag =NULL )
+```
+
+
+```{r}
+
 ```
 
 

@@ -1,0 +1,15 @@
+pandoc: 1.19.2.1
+pkgdown: 1.1.0
+pkgdown_sha: ~
+articles:
+  a-introduction: a-introduction.html
+  b1-data_access: b1-data_access.html
+  b2-data_cleaning: b2-data_cleaning.html
+  c-data_subsetting: c-data_subsetting.html
+  d-data_exploration: d-data_exploration.html
+  e-PCA_data_vis: e-PCA_data_vis.html
+  f1-linear_reg_notes: f1-linear_reg_notes.html
+  f2-linear_reg_fit_plot: f2-linear_reg_fit_plot.html
+  f3-linear_reg_model_fit: f3-linear_reg_model_fit.html
+  z-building_a_package: z-building_a_package.html
+

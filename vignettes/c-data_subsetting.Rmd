@@ -1,92 +1,156 @@
 ---
-title: "C) Data subsetting using dplry"
+title: "C) Data subsetting using dplyr"
 author: "Nathan Brouwer"
-date: "November 13, 2018"
-output: html_document
-editor_options: 
-  chunk_output_type: console
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Make some subset without certain columns and certain rows
+Make some subsets of the data without certain columns and certain rows.
 
-## Preliminaries
+
+### Packages
+
+We'll use the following packages.  You'll need to download them if you haven't already.  I'd try just loading them with library() first (in the next section), then installing if needed.
+
+#### Download packages
+
+Only run this code if you haven't already download these packages.  You can run it by removing the "#" in front of the code.
+```{r}
+#install.package("here")
+#install.package("RCurl")
+```
+
+
+#### Load packages
 
 ```{r}
 library(here)
+library(RCurl)
+library(devtools)
 library(dplyr)
 ```
 
+### Loading the mammalsmilk package
+
+If you haven't already, download the mammalsmilk package from GitHub (note the "S" between mammal and milk).  This is commented out in the code below - only run the code if you have never downloaded it before, or haven't recently (in case its been updated)
+
+```{r}
+# install_github("brouwern/mammalsmilk")
+```
+
+You can then load the package with library()
+```{r}
+library(mammalsmilk)
+```
+
+
+
 ## Load data
 
-Load data cleaned in previous script
+We'll start with data the has the major issues cleaned up.  This was done in the preceding data cleaning vignette.  You can load it just from the package (shown first) or you can try to load the data from your hard drive (shown second).
+
+Within the package, these data are just called "milk"
 ```{r}
+data("milk")
+```
+
+
+There are many ways to get data in R.  If you want to load the data from your hard drive using the here package as discssed in the data access vignette, your code might look like this..
+```{r, eval = F}
+#file name of cleaned data we want to subset
 file. <- "skibiel_mammalsmilk.csv"
 
-full.path <- here::here("data", #folder
+#full path
+## NOTE: this will be particular to YOUR computer
+full.path <- here::here("inst/extdata", #folder
                         file.)  #file name
 
-dat.selected <- read.csv(file = full.path)
+# load the data
+milk <- read.csv(file = full.path)
 ```
 
 Check
 
 ```{r}
-dim(dat.selected)
+dim(milk)
 ```
 
 
-## Remove columns
+## Remove columns from a dataframe
 
-The N column is sample size and isn't needed.  For many analyses we'll fous on fat, so we'll dorp the other columns
+The "N" column indicates sample size used in the original paper where the data came from and and isn't needed.  Also, for many analyses we'll fous on fat, so we'll drop the other columns.  
+
+We can drop columns using the synatx "select(-column.name)"; note 
+
+1. the minus sign ("-") preceding the column name
+1. the column name isn't in quotes
+
+We can do multiple columns by just seperating the names with a comma, including a "-" for each one.  (note, no "c(...)" needed!)
 
 ```{r}
-dat.fat <- dat.selected %>% dplyr::select(-N,
-                                               -prot,
-                                               -sugar,
-                                               -energy)
+milk_fat <- milk %>% dplyr::select(-N,
+                                  -prot,
+                                  -sugar,
+                                  -energy)
 ```
 
 
-We'll save this sub-dataset for easy access
+We can save this sub-dataset for easy access
 
-```{r}
+```{r, eval = F}
+#file name
 file. <- "skibiel_fat.csv"
 
-full.path <- here::here("data", #folder
+# full path
+## note: this will be particular to your computer!
+full.path <- here::here("inst/extdata", #folder
                         file.)  #file name
 
-write.csv(dat.fat,file = full.path,
+write.csv(milk_fat,
+          file = full.path,
           row.names =F)
 ```
 
+These data are also stored within the mammalsmilk package and can be accerssed directly using library("milk_fat")
 
 ## Filter by rows
 
-For some analyses we'll focus on just primates and close-ish relatives.
+For some analyses we'll focus on just primates and their close-ish relatives.  The filter() command lets us just slect the rows we want.
+
+
+First, let's make a vector of the names of the taxonomic orders we want
+```{r}
+primates.order.and.friends <- c("Rodentia","Primates","Lagomorpha")
+```
 
 
 ```{r}
-primates.and.friends <- c("Rodentia","Primates","Lagomorpha")
-
-primate.fat <-  dat.fat %>% filter(ord %in% primates.and.friends)
+milk_primates <-  milk_fat %>% filter(ord %in% primates.order.and.friends)
 ```
 
 
 
+As beofre we can save this.
 ```{r}
 file. <- "skibiel_primate_fat.csv"
 
-full.path <- here::here("data", #folder
+full.path <- here::here("inst/extdata", #folder
                         file.)  #file name
 
-write.csv(primate.fat,file = full.path,
+write.csv(milk_primates,
+          file = full.path,
           row.names =F)
 ```
 
+These data can also be accessed directly using data("milk_primates")
 
 ```{r}
 

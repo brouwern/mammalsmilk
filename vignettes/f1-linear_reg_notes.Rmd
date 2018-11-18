@@ -1,0 +1,110 @@
+---
+title: "f1) Linear regression notes"
+author: "Nathan Brouwer | brouwern@gmail.com | @lowbrowR"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+
+## Introduction
+
+This is a set of notes on simple linear regression.
+
+
+
+## What does regression do?
+
+Regression typically is involved in 3 potentially related tasks
+
+1. Model selection
+1. Prediction
+1. Inference
+
+
+
+For the milk data, relevant aspects of these tasks might be:
+
+* MODEL SELECTION: what's the best predictor of milk fat?
+    + body size?
+    + litter size?
+    + lactation duration?
+* PREDICTION: i.e., given the body size of an extinct animal, what do we ...
+    + predict its % milk fat to be?
+    + how certain could we be in this prediction?
+* INFERENCE: is the evolution of milk fat drive by change in body size?
+
+**Model selection** can have as its end goal either used for inference or prediction.  For inference, the "best" model is considered to have, *relative to the other models*, a higher chance of representing causal relationships.  However, if a model the corresponds to reality isn't included in the set of models examined, any inference about causation will be spurious.  Moreover, investigation about causation is always best grounded in experimentation, and the milk dataset.   For prediction, model selection is about finding the strongest statistical association between y and x variables
+
+**Prediction** can be agnostic to inference; the prediction just has to be accurate, regardless of the actual causal relationship between the y and the x variable.  Stated another way, prediction is about the statistical relationship between 2 variables.
+
+
+## Steps in regression
+
+* Standard approach
+    + Model fitting: least squares
+    + Inference: Frequentist
+    + (In particular: "NHST" w/alpha = 0.05)
+    + (="Null hypothesis significance testing")
+* More advanced models: 
+    + Model fitting: "generalized least square" (GLS)
+    + gls() function, nlme package
+    + can relax standard regression assumptions, such as constancy of variance or independence of data
+    + This tool isn't used by bio/ecologists much, but should be!
+    + The exception to this is comparative studies like Skibiel which should take into account phylogeny
+* Advanced models: Likelihood
+    + For "GLMs": generalized linear models
+    + i.e. logistic regression
+    + repeated measures, mixed effects, random effects often fit with likelihood methods
+* Very Complex models: Bayes w/ MCMC
+    + very complex/hierarchical or multilevel models
+    + MCMC: Markov chain Monte carol
+
+## Aside: what do I mean by "multilevel" or "hiearchical"
+
+* Many names for same / similar issue
+    + repeated measures
+    + blocking
+    + random effects / mixed effects models
+    + multilevel models
+    + hierarchical models
+* Measurements on same thing multiple times or on similar experimental units are likely to be more similar to each other than random
+* Violates the assumption of independence in regression/ANOVA
+
+
+
+## Multilevel Examples
+
+* Education studies
+    + students in class rooms in schools in districts in states
+    + (multiple students per class, multiples classes per school, multiple schools per district)
+* Health-care studies
+    + patients on hospital floors in hospitals in cities
+* Animal studies
+    + repeated measures on mice in cages
+    + (multiple measurements per mice, multiple mice per cage)
+
+
+
+
+## Regression models in R using lm()
+
+
+### Focal data subset: Primates & Relatives
+
+* Primates
+* Rodents 
+* Rabbits
+
+Rodents are relatively closely related to primates; this is one reason why mouse models are often useful for biomedical studies.

@@ -1,0 +1,306 @@
+---
+title: "m) Regression Introduction"
+author: "Nathan Brouwer | brouwern@gmail.com | @lowbrowR"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = TRUE)
+```
+
+
+```{r, echo = F}
+#load data
+milk2 <- read.csv(file = "Skibiel_clean_milk_focal_column.csv")
+milk3 <- read.csv(file = "Skibiel_clean_milk_focal_genera.csv")
+```
+
+
+```{r, echo=FALSE}
+par(mfrow = c(1,1))
+source("./scripts_Lecture4/sx_reg_flowchart1_inf_predict_model.R")
+
+lm.null <- lm(fat.percent ~ 1,
+              data = milk3)
+
+```
+
+# What about our other predictors?
+
+* female size was just one of the predictors
+    + litter size, duration of lactation, etc
+* We can use hypothesis tests to determine if each one of these is "significant"
+* But, can't compare these models because they aren't "nested"
+* In contrats, AIC can compare "non-neste models"
+
+
+
+
+
+
+## Fit models for each predictor
+
+* All of these models have 2 parameters (slope, intercept)
+* But, are NOT nested b/c the slope is for a difference predictor
+* nested = "a special case of", "reduced version"
+    + the null model (...~1) is nested in all of them b/c it lacks this slope parameter
+
+```{r}
+# re-fit female mass model
+lm.mass <- lm(fat.percent ~ log(mass.female), data = milk3)
+
+#gestation duration
+lm.gestation <- lm(fat.percent ~ log(gest.month.NUM), data = milk3)
+
+#lactation duration
+lm.lac.duration <- lm(fat.percent ~ log(lacat.mo.NUM), data = milk3)
+
+#Litter mass
+lm.litter.mass <- lm(fat.percent ~ log(mass.litter), data = milk3)
+
+```
+
+
+
+
+
+## Which predictor fits the data best?
+
+### NSHT: do significance test for each predictor against the null
+
+```{r}
+anova(lm.mass, lm.null)
+anova(lm.gestation, lm.null)
+anova(lm.lac.duration, lm.null)
+anova(lm.litter.mass, lm.null)
+```
+
+* p lm.mass         = 0.00044 ***
+* p lm.gestation    = 0.0011 **
+* p lm.lac.duration = 7.5e-06 ***
+* p lm.litter.mass  = 0.013 *
+    + How to judge which one is best?
+    + Each one is significant...
+    + Lower p-value does not! mean is a better fit
+
+
+
+
+### Information theory-AIC (IT-AIC)
+
+* AIC can compare non-nested models
+```{r, echo = -1}
+library(bbmle)
+ICtab(lm.mass,
+      lm.gestation,
+      lm.lac.duration,
+      lm.litter.mass)
+```
+
+
+# What about R2?
+
+```{r, echo = F}
+
+AIC <- c(AIC(lm.lac.duration),
+AIC(lm.mass),
+AIC(lm.gestation),
+AIC(lm.litter.mass))
+
+R2  <- c(summary(lm.lac.duration)$r.squared,
+summary(lm.mass)$r.squared,
+summary(lm.gestation)$r.squared,
+summary(lm.litter.mass)$r.squared)
+
+slopes <- c(coef(lm.lac.duration)[2],
+coef(lm.mass)[2],
+coef(lm.gestation)[2],
+coef(lm.litter.mass)[2])
+
+mods <- c("Lactation duration",
+          "Female mass",
+          "Gestation duration",
+          "Litter mass")
+AIC.vs.R2.vs.slope <- data.frame(AIC,R2,slopes,
+                                 row.names = mods)
+
+```
+
+```{r, echo = F}
+library(pander)
+pander(AIC.vs.R2.vs.slope)
+```
+
+* AIC correlates with R2 in this case
+* Slopes not related to AIC/R2
+* Its been shown that in general R2 SHOULD NOT be used for model selection/model comparison
+* R2 ALWAYS goes up when parameters added to models
+* Adjusted-R2 adjusted for this
+* Adjusted-R2 still doesn't work, for model selection
+* R2 is a descriptive statistics, NOT an inferential stat
+
+
+
+
+
+
+# Can we include multiple predictors?
+
+* R2 is low
+* Lots of scatter around line, lots of variation still in data
+* We can build models with more than one of these predictors
+    + can do 2, 3 or more
+    + can do "interactions" between predictors
+* This is "multiple regression" b/c there are multiple predictors
+* Each predictor gets its own slope
+* (but only one intercept)
+
+
+## Model with 2 predictors
+```{r}
+# Model model according to AIC
+lm.lac.duration <- lm(fat.percent ~ log(lacat.mo.NUM), data = milk3)
+
+
+#Add additional predictor
+lm.lac.dur.fem.mass <- lm(fat.percent ~ log(lacat.mo.NUM) +
+                            log(mass.female), 
+                          data = milk3)
+
+```
+
+
+
+
+## Summary of model w/2 predictors
+
+```{r}
+summary(lm.lac.dur.fem.mass)
+```
+
+* female mass NOT significant...
+* but it was on its own when run previously
+* Why would this happen?
+
+
+
+
+# Should we include multiple predictors?
+
+```{r, echo = F}
+par(mfrow = c(2,2))
+
+#Mass vs lactation duration
+plot(log(lacat.mo.NUM) ~ log(mass.female),
+     data = milk3,
+     ylab = "Log(lactation dur.",
+     pch = 18,
+     cex =2,
+     main = "Mass vs lactation duration")
+cor.x <- round(with(milk3,cor(log(lacat.mo.NUM), log(mass.female))),3)
+cor. <-expression(paste(rho,"=0.75"))
+mtext(text = cor.)
+
+#Mass vs Gestation duration
+plot(log(gest.month.NUM) ~ log(mass.female),
+     data = milk3,
+     ylab = "Log(gestation dur.)",
+     pch = 18,
+     cex =2,
+     main = "Mass vs Gestation duration")
+
+#maternal Mass vs Litter mass
+plot(log(mass.litter) ~ log(mass.female),
+     data = milk3,
+     ylab = "Log(Liter mass)",
+     pch = 18,
+     cex =2,
+     main = "Maternal Mass vs LItter mass duration")
+
+
+
+#Lactation vs. gestation duration
+plot(log(gest.month.NUM) ~ log(lacat.mo.NUM),
+     data = milk3,
+     ylab = "Log(Gestation dur)",
+     pch = 18,
+     cex =2,
+     main = "Lactation vs. gestation duration")
+
+```
+
+* All of our predictors are highly correlated with each other
+* "collinearity" of predictory or "multicollinearity" is major problem in regression
+
+
+
+
+
+## Hard-code logs 
+
+This will make the following code easier to do
+
+```{r}
+milk3$mass.fem.log <- log(milk3$mass.female)
+milk3$lacat.mo.log <- log(milk3$lacat.mo.NUM)
+milk3$gest.month.log <- log(milk3$gest.month.NUM)
+milk3$mass.litter.log <- log(milk3$mass.litter)
+
+```
+
+
+
+
+# Pairs plots
+
+* use pairs(..,lower.panel = NULL)
+```{r, echo = F}
+par(mfrow = c(1,1))
+pairs(milk3[,c("fat.percent",
+                    "mass.fem.log",
+                    "lacat.mo.log",
+                    "gest.month.log",
+                    "mass.litter.log")],
+      lower.panel = NULL)
+
+```
+
+
+# Add smoother & correlations
+
+* see ?pairs and example using  panel.cor()
+
+```{r, echo = F}
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y))
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, 
+         txt#, 
+         #cex = cex.cor * r
+         )
+}
+
+pairs(milk3[,c("fat.percent",
+                    "mass.fem.log",
+                    "lacat.mo.log",
+                    "gest.month.log",
+                    "mass.litter.log")],
+      lower.panel = panel.cor,
+      col = 1,
+      panel = panel.smooth)
+
+```
+
+
+

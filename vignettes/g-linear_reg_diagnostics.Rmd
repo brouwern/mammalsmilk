@@ -1,0 +1,47 @@
+---
+title: "g) Regression diagnostics"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+
+https://ademos.people.uic.edu/Chapter12.html#2_regression_assumptions
+https://ademos.people.uic.edu/Chapter12.html#32_testing_for_outliers:_outliertest()
+
+car::outlierTest()
+car::ncvTest()
+car::crPlots()
+
+
+Pena & Slate.  2006.  [Global Validation of Linear Model Assumptions.  Am Stat.](https://doi.org/10.1198/016214505000000637)
+
+gvlma::gvlma
+
+
+
+
+["Assumptions of Linear Regression"](http://r-statistics.co/Assumptions-of-Linear-Regression.html)
+
+
+
+[Quick-R: Regression Diagnostics](https://www.statmethods.net/stats/rdiagnostics.html)
+
+
+
+Altman & Krzywinski.  2016.  [Regression diagnostics.  Nature Methods.](https://www.nature.com/articles/nmeth.3854)
+
+
+Zhang 2016.  [Residuals and regression diagnostics: focusing on logistic regression.  Annals of Translational Medicine.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4885900/)

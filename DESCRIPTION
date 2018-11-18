@@ -20,6 +20,10 @@ Imports:
     ggplot2,
     nlme,
     lme4,
-    bbmle
+    bbmle,
+    RCurl,
+    GGally,
+    broom,
+    arm
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.0

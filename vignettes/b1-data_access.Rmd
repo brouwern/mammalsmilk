@@ -1,0 +1,242 @@
+---
+title: "b) Accessing mammalsmilk data"
+author: "Nathan Brouwer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+## Introduction
+
+In this tutorial we'll load the data from the mammalsmilk data.  All the data files used in the package are contained internally within the package and can be loaded (as detailed below) using the standard data() function in R.  However, getting raw into R is frequently an issue with R, and so I give instructions on how to find the raw .csv on your hard drive or the internet.  I then outline two ways to load data into R.  I first go over a basic way using the "Import Dataset" button in RStudio.  I think cover a more advanced way using there here() function. 
+
+
+### Important functions used
+
+* devtools::install_github
+* read.csv
+
+
+### Original Data
+
+**Skibiel et al 2013.**  The evolution of the nutrient composition of mammalian milks.  Journal of Animal Ecology 82: 1254-1264.  https://doi.org/10.1111/1365-2656.12095 
+
+
+
+## Preliminaries
+
+### Packages
+
+We'll use the following packages.  You'll need to download them if you haven't already.  I'd try just loading them with library() first (in the next section), then installing if needed.
+
+#### Download packages
+
+Only run this code if you haven't already download these packages.  You can run it by removing the "#" in front of the code.
+```{r}
+#install.package("here")
+#install.package("RCurl")
+```
+
+
+#### Load packages
+
+```{r}
+library(here)
+library(RCurl)
+library(devtools)
+```
+
+### Loading the mammalsmilk package
+
+If you haven't already, download the mammalsmilk package from GitHub (note the "S" between mammal and milk).  This is commented out in the code below - only run the code if you have never downloaded it before, or haven't recently (in case its been updated)
+
+```{r}
+# install_github("brouwern/mammalsmilk")
+```
+
+You can then load the package with library()
+```{r}
+library(mammalsmilk)
+```
+
+
+
+## Loading data
+
+
+### Where are the datasets stored?
+
+The datasets for this package can be found in several places.
+
+1. Internal within the package and loaded into R using the data() function. 
+1. On [GitHub](https://github.com/brouwern/mammalsmilk/tree/master/inst/extdata)
+1. Saved as .csv files with the package source code.  R saves all your packages in a single, and the mammalsmilk directory will have the .csv files under mammalsmilk/inst/extdata
+
+### Accessing data from the package
+
+Data within R or an R package is accessed using the data() command.  TO get the classic iris data set I do this: 
+```{r, eval = F}
+data("iris")
+```
+
+If mammalsmilk is downloaded and installed using library() I can get a dataset like this:
+
+```{r}
+data("milk_raw")
+```
+
+This should always work.  However, two things:
+
+1. This package is under development, so this might not always work
+1. Loading data is a perennially difficult task, so it can e good to locate the .csv files and practice loading by hand
+
+
+### Loading directly from GitHub
+
+Data can be loaded directly from GitHub using the RCurl command.
+
+First, we need the URL for the file
+```{r}
+# Create an object for the URL where your data is stored.
+url <- "https://raw.githubusercontent.com/brouwern/mammalsmilk/master/inst/extdata/skibiel_mammalsmilk_raw.csv"
+```
+
+Then we run getURL()
+```{r}
+myData <- getURL(url)
+```
+
+
+Finally load it using read.csv
+
+```{r}
+milk_raw <- read.csv(textConnection(myData))
+```
+
+Check that its there using dim()
+```{r}
+dim(milk_raw)
+```
+
+For more information on loading from GitHub see https://github.com/christophergandrud/Introduction_to_Statistics_and_Data_Analysis_Yonsei/wiki/Importing-Data,-Basic
+
+
+### Load .csv files from your hard drive
+
+Loading data into R can be difficult when you first get started.  Its good to practice this, so if you've had trouble in the past I recommend locating the .csv files associated with this package and trying to load them by hand, following the directions below.
+
+How data gets loaded into R is always somewhat particular to how you are running R and where you have your data saved.  I will outline a basic way to load data first, then provide code for how I use a more advanced and flexible approach. 
+
+
+#### Find the .csv files
+
+Once you have the package downloaded and installed using library() you should be able to find the files associated with it just using the search function on your computer.  The main starting data file for the package is "skibiel_mammalsmilk_raw.csv"; my PC found it instantly.  I then right clicked on it and select "Open File Location" to see the directory.
+
+This opens a directory ".../mammalsmilk/inst/extdata" that contains all the .csv files underlying the data files used in the package.
+
+To practice loading .csv files I recommend copying these files to a new directory where they can easily be found, eg, where you normally save all your R work.
+
+If you can't find the data on your hard drive, you can also download it directly from [GitHub](https://raw.githubusercontent.com/brouwern/mammalsmilk/master/inst/extdata/skibiel_mammalsmilk_raw.csv):
+
+https://raw.githubusercontent.com/brouwern/mammalsmilk/master/inst/extdata/skibiel_mammalsmilk_raw.csv
+
+This will take you to a raw version of the data and you can right click and "Save as" it to wherever you want.
+
+
+#### Loading data for begining users
+
+The easiest way to load data is to figure out where you have saved the data, then use the **"Import dataset"** button in RStudio to navigate there.  This will generate code to load the data into your current R session.  You can copy this code and paste it into your script for future use. 
+
+Using the following steps I can generate code to load the milk data
+
+1. Click on "Import Dataset", which is on the "Environment" tab of the of the Environment / History / Connection panel.
+1. Select "From text (base)" (all the options work similarly)
+1. Navigating to the .csv
+1. Clicking through the pop up windows to finalize the import.
+
+
+The code that gets generated looks like this, which reflects the particular location of the .csv file on my hard drive
+```{r, eval = F}
+#Note: code is particular to my hard drive
+dat <- read.csv("~/1_R/git/mammalsmilk/data/skibiel_mammalsmilk_raw.csv")
+```
+
+Based on the file name, RStudio gives R object the name "skibiel_mammalsmilk_raw", which I change to just "dat" to make it easier to type.
+
+This approach will always work, but has one major hangup: if I make any changes to the folder structure of my project, such as where it is on my hard drive, then the read.csv() code will break.  In the next section, I show a more flexible technique.
+
+#### Loading data flexibly
+
+For my work I usually
+
+* Create a seperate folder for each analysis (eg "mammals milk")
+* Use an RStudio Project for the analysis
+* Keep code in one sub-folder ("mammalsmilk/analyses")
+* Keep data in a seperate sub-folder ("mammalsmilk/data")
+* use the here() function from the here package to detect where my RStudio package is on my hard drive
+
+One important caveat: for packages, data in .csv format is usually hidden somewhat in a sub-folder called "extdata" ("external data") within another folder called "inst" ("installed" non-R files).  The full path I will be using below is there for *not* "mammalsmilk/data" but rather "mammalsmilk/inst/extdata".
+
+here() does 2 things
+
+1. Figures out where the current working directory is on your hard drive
+1. Builds valid file names for locations you specify relative to that working directory
+
+The here package is new-ish and there are unfortunately some other packages that have here() functions, so its always necessary to use here::here().
+
+
+If I call here::here() it tells me exactly where my project is
+```{r}
+here::here() 
+```
+
+
+Note that this is similar to the getwd() command, but there are very important differences between how these functions work.
+
+To load data, I usually create an object with my file name of interest
+
+```{r}
+file. <- "Skibiel_mammalsmilk_raw.csv"
+```
+
+I then use here() to build the **full file path** for the data file.  "data" is the folder where the .csv file is.
+```{r}
+full.path <- here::here("inst/extdata", #folder
+                        file.)  #file name
+```
+
+Note that here() take the file path, adds the "/inst/extdata" folder extension and finally the "/Skibiel_mammalsmilk_raw.csv" file.
+```{r}
+full.path
+```
+
+I can then pass this R object with the text of the file path to read.csv()
+```{r}
+milk_raw <- read.csv(file = full.path)
+```
+
+
+
+Look at the size of dataframe just loaded
+```{r}
+dim(milk_raw)
+```
+
+and take a look at the raw numbers and summary
+```{r, echo = F}
+head(milk_raw)
+tail(milk_raw)
+summary(milk_raw)
+```
+
