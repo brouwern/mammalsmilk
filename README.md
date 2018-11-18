@@ -7,8 +7,11 @@ The goal of mammalsmilk is to replicate the analyses of Skibiel et al 2013  "The
 You can install the developement version of mammals milk from GitHub with:
 
 ``` r
+#download from github
+install_github("brouwern/mammalsmilk")
 
-
+#load into R
+library(mammalsmilk)
 ```
 
 ## Example
