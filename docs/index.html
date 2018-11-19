@@ -108,9 +108,15 @@
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>You can install the developement version of mammals milk from GitHub with:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#download from github</span>
-<span class="kw">install_github</span>(<span class="st">"brouwern/mammalsmilk"</span>)
+<p>You can install the developement version of mammals milk from GitHub using the devtools package</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#install devtools if needed</span>
+## install.packages("devtools")
+
+<span class="co">#load devtools</span>
+<span class="kw">library</span>(devtools)
+
+<span class="co">#download from github</span>
+dvetools<span class="op">::</span><span class="kw">install_github</span>(<span class="st">"brouwern/mammalsmilk"</span>)
 
 <span class="co">#load into R</span>
 <span class="kw">library</span>(mammalsmilk)</code></pre></div>
@@ -118,8 +124,13 @@
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
-<p>This is a basic example which shows you how to solve a common problem:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## basic example code</code></pre></div>
+<p>mammalsmilk contains data by Skibiel et al (2013) on the relationship between various life history and morphological traits and milk composition. For example, carnivores produce milk with a much higher fat content than herbivores and omnivores.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggpubr)
+<span class="kw">data</span>(milk)
+<span class="kw">ggboxplot</span>(<span class="dt">data =</span> milk,
+<span class="dt">y =</span> <span class="st">"fat"</span>, 
+<span class="dt">x =</span><span class="st">"diet"</span>,
+<span class="dt">fill =</span> <span class="st">"diet"</span>)</code></pre></div>
 </div>
 </div>
   </div>
