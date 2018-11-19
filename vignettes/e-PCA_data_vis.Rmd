@@ -339,16 +339,23 @@ Facet by diet
 
 ```{r}
 qplot(y = Comp.1 ,
-      x = Comp.3,
+      x = Comp.2,
       color = biome,
       shape = diet,
       #size = log(mass.fem),
       data = df,
-      facets = Australia ~ diet) 
+      facets = diet ~ .) 
 ```
 
 
 ```{r}
+df$group <- with(df, paste(biome,diet))
 
+qplot(y = Comp.1 ,
+      x = Comp.2,
+      color = group,
+      shape = group,
+      #size = sqrt(lacat.mo),
+      data = df) 
 ```
 

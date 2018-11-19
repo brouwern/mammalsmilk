@@ -106,7 +106,7 @@
                         <h4 class="author">Nathan Brouwer | <a href="mailto:brouwern@gmail.com">brouwern@gmail.com</a> | <span class="citation">@lowbrowR</span>
 </h4>
             
-            <h4 class="date">2018-11-18</h4>
+            <h4 class="date">2018-11-19</h4>
       
       
       <div class="hidden name"><code>f2-linear_reg_fit_plot.Rmd</code></div>
@@ -118,7 +118,7 @@
 <div id="introduction" class="section level2">
 <h2 class="hasAnchor">
 <a href="#introduction" class="anchor"></a>Introduction</h2>
-<p>This walkthrough introduces how to run a basic linear regression model and plot the output. It demonstrates different ways to plot the output, including</p>
+<p>This walk through introduces how to run a basic linear regression model and plot the output. It demonstrates different ways to plot the output, including</p>
 <ul>
 <li>ggplot</li>
 <li>ggpubr::ggscatter</li>
@@ -136,7 +136,7 @@
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install_github("brouwern/mammalsmilk")</span></code></pre></div>
 <p>You can then load the package with library()</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(mammalsmilk)</code></pre></div>
-<p>THe example data is milk_primates</p>
+<p>The example data is milk_primates</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">"milk_primates"</span>)</code></pre></div>
 </div>
 <div id="load-libraries" class="section level3">
@@ -152,19 +152,19 @@
 <div id="basic-regression-in-r" class="section level2">
 <h2 class="hasAnchor">
 <a href="#basic-regression-in-r" class="anchor"></a>Basic regression in R</h2>
-<p>Linear regression is done in R with the lm() function, which stands for “linear model”. Most “statistcal tests are or can be formulated as linear models; t-tests, ANOVA, ANCOVA, linear regression, and mulitple linear regression are all linear models</p>
-<p>Some common methods can’t be fit directly as a linear model, like Welch’s t-test, which corrects for unequal variance. However, a very similar approach can be implemented using the function gls() in the nlme package. Standard linear regression is fit using least squares methods, and “gls” stands for “generalized least squares” and makes it possible to relax many of the standard assumptions of classic statistical tests, such as constant variance and independnece of residuals.</p>
-<p>An extension of the lm() function is glm(), which stands for “generali linear model” or “generalized linear model.” Linear models work with numeric data and assumes that residuals are normally distributed. GLMs allow you to work binomial, count, and other forms of data that have non-normal residuals.</p>
+<p>Linear regression is done in R with the lm() function, which stands for “linear model”. Most “statistical tests are or can be formulated as linear models; t-tests, ANOVA, ANCOVA, linear regression, and multiple linear regression are all linear models</p>
+<p>Some common methods can’t be fit directly as a linear model, like Welch’s t-test, which corrects for unequal variance. However, a very similar approach can be implemented using the function gls() in the nlme package. Standard linear regression is fit using least squares methods, and “gls” stands for “generalized least squares” and makes it possible to relax many of the standard assumptions of classic statistical tests, such as constant variance and independence of residuals.</p>
+<p>An extension of the lm() function is glm(), which stands for “general linear model” or “generalized linear model.” Linear models work with numeric data and assumes that residuals are normally distributed. GLMs allow you to work binomial, count, and other forms of data that have non-normal residuals.</p>
 <div id="data-preparation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#data-preparation" class="anchor"></a>Data preparation</h3>
-<p>The data has been cleaned in previous tutorials. One thing that will make modeling these data is to transform the predictor variable. This is because the mass of anmals varies so much.</p>
+<p>The data has been cleaned in previous tutorials. One thing that will make modeling these data is to transform the predictor variable. This is because the mass of animals varies so much.</p>
 <p>If we look at the raw data its pretty ugly</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggscatter</span>(<span class="dt">data =</span> milk_primates,
          <span class="dt">y =</span> <span class="st">"fat"</span>,
          <span class="dt">x =</span> <span class="st">"mass.fem"</span>)</code></pre></div>
 <p><img src="f2-linear_reg_fit_plot_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
-<p>This is because the dataset contains Gorillas, which weigh almost 100,000 grams. The next largest animals is a baboob, then a beaver (humans are absent from the datset for some reason).</p>
+<p>This is because the dataset contains Gorillas, which weigh almost 100,000 grams. The next largest animals is a baboon, then a beaver (humans are absent from the dataset for some reason).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#determine order</span>
 i. &lt;-<span class="st"> </span><span class="kw">order</span>(milk_primates<span class="op">$</span>mass.fem,
             <span class="dt">decreasing =</span> T)
@@ -186,7 +186,7 @@ milk_primates<span class="op">$</span>mass.fem.log &lt;-<span class="st"> </span
 <div id="building-a-regression-model" class="section level3">
 <h3 class="hasAnchor">
 <a href="#building-a-regression-model" class="anchor"></a>Building a regression model</h3>
-<p>Let’s fit a simple linear regression model. This will have the form we are familiar with from geommetry class of</p>
+<p>Let’s fit a simple linear regression model. This will have the form we are familiar with from geometry class of</p>
 <blockquote>
 <p>y = m*x + b</p>
 </blockquote>
@@ -195,12 +195,12 @@ milk_primates<span class="op">$</span>mass.fem.log &lt;-<span class="st"> </span
 <blockquote>
 <p>y = b + m*x</p>
 </blockquote>
-<p>Additinally, we call b “Beta 0” and m “Beta 1”</p>
+<p>Additionally, we call b “Beta 0” and m “Beta 1”</p>
 <blockquote>
 <p>y = B0 + B1*x</p>
 </blockquote>
 <p>To make life hard, R will call B0 “(Intercept)”.</p>
-<p>For our particulary situation, we have the model</p>
+<p>For our particularly situation, we have the model</p>
 <blockquote>
 <p>fat = B0 + B1*mass.fem.log</p>
 </blockquote>
@@ -209,7 +209,7 @@ milk_primates<span class="op">$</span>mass.fem.log &lt;-<span class="st"> </span
 <blockquote>
 <p>fat ~ 1 + mass.fem.log</p>
 </blockquote>
-<p>Where the 1 represents the intercept. In most cases we drop it and just writw</p>
+<p>Where the 1 represents the intercept. In most cases we drop it and just write</p>
 <blockquote>
 <p>fat ~ mass.fem.log</p>
 </blockquote>
@@ -258,7 +258,7 @@ milk_primates<span class="op">$</span>mass.fem.log &lt;-<span class="st"> </span
 <div id="broomtidy" class="section level3">
 <h3 class="hasAnchor">
 <a href="#broomtidy" class="anchor"></a>broom::tidy</h3>
-<p>A cleaner output can be created with th tidy() function in the broom package:</p>
+<p>A cleaner output can be created with the tidy() function in the broom package:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">broom<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/broom/topics/tidy">tidy</a></span>(lm.mass)</code></pre></div>
 <pre><code>## # A tibble: 2 x 5
 ##   term         estimate std.error statistic     p.value
@@ -302,7 +302,7 @@ milk_primates<span class="op">$</span>mass.fem.log &lt;-<span class="st"> </span
            <span class="dt">ylab. =</span> <span class="st">"Fat %"</span>,
            <span class="dt">annotate. =</span> <span class="st">"summary"</span>)</code></pre></div>
 <p><img src="f2-linear_reg_fit_plot_files/figure-html/unnamed-chunk-16-1.png" width="700"></p>
-<p>Or the quation for the model</p>
+<p>Or the equation for the model</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/gg_lm_plot.html">gg_lm_plot</a></span>(lm.mass,
            <span class="dt">xlab. =</span> <span class="st">"log(female mass)"</span>,
            <span class="dt">ylab. =</span> <span class="st">"Fat %"</span>,

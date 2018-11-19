@@ -32,7 +32,7 @@ library(mammalsmilk)
 ```
 
 
-THe example data is milk_primates
+The example data is milk_primates
 ```{r}
 data("milk_primates")
 ```

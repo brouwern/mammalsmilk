@@ -217,10 +217,13 @@ Use a directory
 
 ## devtools functions
 
+"Builds package vignettes using the same algorithm that R CMD build does"
+
 ```{r, eval = F}
 devtools::build_vignettes()
 ```
 
+"This uses a fairly rudimentary algorithm where any files in ‘inst/doc’ with a name that exists in ‘vignettes’ are removed."
 clean_vignettes() 
 
 ## pckgdown functions

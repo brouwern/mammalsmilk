@@ -112,7 +112,7 @@
 </ol></h1>
                         <h4 class="author">Vignette Author</h4>
             
-            <h4 class="date">2018-11-18</h4>
+            <h4 class="date">2018-11-19</h4>
       
       
       <div class="hidden name"><code>g-linear_reg_diagnostics.Rmd</code></div>
@@ -121,6 +121,205 @@
 
     
     
+<div id="introduction" class="section level2">
+<h2 class="hasAnchor">
+<a href="#introduction" class="anchor"></a>Introduction</h2>
+<p>In order for inference from a regression model to be valid several assumptions need to be reasonably met:</p>
+<ol style="list-style-type: decimal">
+<li>The residuals are normally distributed (normality assumption)</li>
+<li>The residuals have a constant variance accross the range of the predictor (assumption of constant variance, aka “homoskedasticity”)</li>
+<li>Data points are independent of one another; that is, the data points don’t occur in meaningful groups (such as familities), data points collected spatially close to each other related, and data points collected close to each other in time are related.</li>
+<li>The true relationship between the preditor x and response y is indeed linear</li>
+</ol>
+<p>These are in approximate order of increasing importance (Gelman and Hill 2007). Historically, biologists have been very concerned with normality, perhaps because its the easiest to attempt to test, but its frequently not a big deal. Normality can usually be improved using a log transformation.</p>
+<p>The assumption of constant variance is more important. This is the same assumption as in t-test and ANOVA of homogenous variances in each group. My impression is that biologists have typically thought about this more for t-tests and ANOVA, and less for regression, but don’t quote me on that. Log transformation can improve homoskedasticity.</p>
+<p>Independence is a big deal, and can only be addressed using more advanced models. The other assumptions can be probed using graphical displays (favored by most) or statistical tests (still used by some). The impacts of some forms of non-independence can be explored in the data (temporal and spatial correlations) but others might only be apparent from the design of the study (grouping, clustering).</p>
+<p>The non-independence of data points can occur due to things being grouped physically together, such as mice sharing a cage, or otherwise sharing a related condition, such as patients who were all treated by the same doctor. Things that are otherwise independent, such as two trees of different species growing in a forest, might experience similiar environmental conditions if they are close to each other, or could experience very different conditions if they are far apart. “Spatial autocorrelation” is a non-indepndence that occurs due to spatial proximity, while “temporal autocorrelation” occurs due to proximity in time.</p>
+<p>In this tutorial we’ll look at our model of milk fat versus female (maternal) body size and examine if these data meet these assumptions.</p>
+</div>
+<div id="preliminaries" class="section level2">
+<h2 class="hasAnchor">
+<a href="#preliminaries" class="anchor"></a>Preliminaries</h2>
+<div id="load-data" class="section level3">
+<h3 class="hasAnchor">
+<a href="#load-data" class="anchor"></a>Load data</h3>
+<p>Install the mammals milk package if needed.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install_github("brouwern/mammalsmilk")</span></code></pre></div>
+<p>You can then load the package with library()</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(mammalsmilk)</code></pre></div>
+<p>The example data is milk_primates</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">"milk_primates"</span>)</code></pre></div>
+<p>Log transformation makes things more linear.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#this could be done with dplyr::mutate() too</span>
+milk_primates<span class="op">$</span>mass.fem.log &lt;-<span class="st"> </span><span class="kw">log</span>(milk_primates<span class="op">$</span>mass.fem)</code></pre></div>
+</div>
+<div id="load-libraries" class="section level3">
+<h3 class="hasAnchor">
+<a href="#load-libraries" class="anchor"></a>Load libraries</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(ggpubr)
+<span class="co">#&gt; Loading required package: magrittr</span>
+<span class="kw">library</span>(cowplot)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: 'cowplot'</span>
+<span class="co">#&gt; The following object is masked from 'package:ggpubr':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     get_legend</span>
+<span class="co">#&gt; The following object is masked from 'package:ggplot2':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     ggsave</span>
+<span class="kw">library</span>(bbmle)
+<span class="co">#&gt; Loading required package: stats4</span>
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(arm)
+<span class="co">#&gt; Loading required package: MASS</span>
+<span class="co">#&gt; Loading required package: Matrix</span>
+<span class="co">#&gt; Loading required package: lme4</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; arm (Version 1.10-1, built: 2018-4-12)</span>
+<span class="co">#&gt; Working directory is C:/Users/lisanjie/Documents/1_R/git/mammalsmilk/vignettes</span></code></pre></div>
+<p>Note that library() won’t load a package that you haven’t previously downloaded!</p>
+</div>
+</div>
+<div id="fit-the-linear-model" class="section level2">
+<h2 class="hasAnchor">
+<a href="#fit-the-linear-model" class="anchor"></a>Fit the linear model</h2>
+<p>Recall that our data look like this</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg.milk &lt;-<span class="st"> </span><span class="kw">ggscatter</span>(<span class="dt">data =</span> milk_primates,
+          <span class="dt">y =</span> <span class="st">"fat"</span>,
+          <span class="dt">x =</span> <span class="st">"mass.fem.log"</span>,
+          <span class="dt">add =</span> <span class="st">"reg.line"</span>)
+
+gg.milk</code></pre></div>
+<p><img src="g-linear_reg_diagnostics_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<p>We can fit a model with lm()</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm.mass &lt;-<span class="st"> </span><span class="kw">lm</span>(fat <span class="op">~</span><span class="st"> </span>mass.fem.log,
+              <span class="dt">data =</span> milk_primates)</code></pre></div>
+<p>We can get the intercept and slope of the modle using the coef() function</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coef</span>(lm.mass)
+<span class="co">#&gt;  (Intercept) mass.fem.log </span>
+<span class="co">#&gt;    20.514997    -1.751746</span></code></pre></div>
+<p>This indicates that the line through the data points is described by the equation</p>
+<blockquote>
+<p>fat = 20.51 + -1.75*log(female mass)</p>
+</blockquote>
+<p>If we want to estimate the fat content of a primate with a body mass of 65kg grams we could calculate to get the mass in grams.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mass.grams &lt;-<span class="st"> </span>(<span class="dv">65</span><span class="op">*</span><span class="dv">1000</span>)
+mass.grams
+<span class="co">#&gt; [1] 65000</span></code></pre></div>
+<p>Then plug this into the equation</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="fl">20.51</span> <span class="op">+</span><span class="st"> </span><span class="op">-</span><span class="fl">1.75</span><span class="op">*</span><span class="kw">log</span>(mass.grams)
+<span class="co">#&gt; [1] 1.116251</span></code></pre></div>
+<p>We would predict that a primate weighting 65 kg (65000 grams; or a rodent of unusual size, since we included them in our data too) would have a milk fat content of 1.12 %.</p>
+<p>We see this if we find where our x value intercepts the regression line, and then trace it back to the y axis. We can draw lines on our graph using geome_hline and geom_vline (h=horizontal, v = vertical)</p>
+<p>We can see where our 65kg mammal would be along the x axis like this</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg.milk <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="kw">log</span>(mass.grams))</code></pre></div>
+<p><img src="g-linear_reg_diagnostics_files/figure-html/unnamed-chunk-11-1.png" width="700"></p>
+<p>THen trace back to the y axis like this</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg.milk <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="kw">log</span>(mass.grams)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="fl">20.51</span> <span class="op">+</span><span class="st"> </span><span class="op">-</span><span class="fl">1.75</span><span class="op">*</span><span class="kw">log</span>(mass.grams))</code></pre></div>
+<p><img src="g-linear_reg_diagnostics_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
+</div>
+<div id="residuals" class="section level2">
+<h2 class="hasAnchor">
+<a href="#residuals" class="anchor"></a>Residuals</h2>
+<p>Residuals are the difference between observed y value and the one that is predicted by the equation estimated using a regression equation.</p>
+<p>Oour smallest x variable can be found like this. First, sort the masses in order</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">i &lt;-<span class="st"> </span><span class="kw">order</span>(milk_primates<span class="op">$</span>mass.fem)</code></pre></div>
+<p>Then get just the first value, which is the smallest (default is to sort into increasing order)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">i1 &lt;-<span class="st"> </span>i[<span class="dv">1</span>]</code></pre></div>
+<p>Pick some focal columns</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">j &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"fat"</span>,<span class="st">"mass.fem"</span>,<span class="st">"mass.fem.log"</span>,<span class="st">"spp"</span>) </code></pre></div>
+<p>Look at the data associated with the smallest x value</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">milk_primates[i1,j]
+<span class="co">#&gt;    fat mass.fem mass.fem.log          spp</span>
+<span class="co">#&gt; 34  27       16     2.772589 Mus musculus</span></code></pre></div>
+<p>The smallest animal is the mouse Mus musculus, which has a milk fat of 27%. If we take is log(mass.fem) and plug it into our equation we get a prediciton of its milk fat based on its mass:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mass.mouse &lt;-<span class="st"> </span>milk_primates[i1,<span class="st">"mass.fem"</span>]
+<span class="fl">20.51</span> <span class="op">+</span><span class="st"> </span><span class="op">-</span><span class="fl">1.75</span><span class="op">*</span><span class="kw">log</span>(mass.mouse)
+<span class="co">#&gt; [1] 15.65797</span></code></pre></div>
+<p>THe prediciton from the equation is 15.67%, over 11 % lower than what was observed. The difference between the observed y value (27%) and the predicted value (15.7%) is the <strong>residual</strong> or <strong>error</strong>. In this case, 27-15.7 = 11.34.</p>
+</div>
+<div id="accessing-residuals" class="section level2">
+<h2 class="hasAnchor">
+<a href="#accessing-residuals" class="anchor"></a>Accessing residuals</h2>
+<p>We get residuals in R using the resid() command called on a modeling object.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r.i &lt;-<span class="st"> </span><span class="kw">resid</span>(lm.mass)</code></pre></div>
+<p>We can use our index (i1) from above to see what R calcualtes the residual as</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r.i[i1]
+<span class="co">#&gt;       34 </span>
+<span class="co">#&gt; 11.34188</span></code></pre></div>
+<p>R says the residual is 11.34, same as we calculated above.</p>
+<p>We can visualize this residual usig geom_segment()</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg.milk <span class="op">+</span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">y    =</span> <span class="dv">27</span>,
+                          <span class="dt">yend =</span> <span class="fl">15.7</span> ,
+                          <span class="dt">x    =</span> <span class="kw">log</span>(<span class="dv">16</span>), 
+                          <span class="dt">xend =</span> <span class="kw">log</span>(<span class="dv">16</span>)),
+                      <span class="dt">color =</span> <span class="st">"red"</span>)</code></pre></div>
+<p><img src="g-linear_reg_diagnostics_files/figure-html/unnamed-chunk-20-1.png" width="700"></p>
+<p>We can visualize all of the residuals if we want.</p>
+<p>First, get the data that was fed into the model from the lm.mass object</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model.dat &lt;-<span class="st"> </span>lm.mass<span class="op">$</span>model
+fat &lt;-model.dat<span class="op">$</span>fat
+mass.fem.log &lt;-<span class="st"> </span>model.dat<span class="op">$</span>mass.fem.log
+r.i &lt;-<span class="st"> </span><span class="kw">resid</span>(lm.mass)</code></pre></div>
+<p>Then plot all of the residausl</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg.milk <span class="op">+</span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">y =</span> fat,
+                          <span class="dt">yend =</span> fat<span class="op">-</span><span class="st"> </span>r.i,
+                          <span class="dt">x =</span> mass.fem.log, 
+                          <span class="dt">xend =</span> mass.fem.log,
+                      <span class="dt">color =</span> <span class="st">"red"</span>))</code></pre></div>
+<p><img src="g-linear_reg_diagnostics_files/figure-html/unnamed-chunk-22-1.png" width="700"></p>
+</div>
+<div id="residuals-should-sum-to-zero" class="section level2">
+<h2 class="hasAnchor">
+<a href="#residuals-should-sum-to-zero" class="anchor"></a>Residuals should sum to zero</h2>
+<p>THis isn’t a diagnostic, but somethign to thing about with regards to why everything gets squared in statists.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(r.i)
+<span class="co">#&gt; [1] -3.885781e-15</span></code></pre></div>
+<p>This is very very very very close to zer.</p>
+</div>
+<div id="residuals-should-be-normal" class="section level2">
+<h2 class="hasAnchor">
+<a href="#residuals-should-be-normal" class="anchor"></a>Residuals should be normal</h2>
+<p>In order for p-values, confidence intervals etc to be correct the data should be normal. In practice this isn’t a huge deal but its good to check.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(r.i)</code></pre></div>
+<p><img src="g-linear_reg_diagnostics_files/figure-html/unnamed-chunk-24-1.png" width="700"></p>
+<p>These residuals aren’t particularly normal. In the original paper, the author’s log transformed fat</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">milk_primates &lt;-<span class="st"> </span>milk_primates <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">fat.log =</span> <span class="kw">log</span>(fat))
+
+
+lm.mass.log.fat &lt;-<span class="st"> </span><span class="kw">lm</span>(fat.log <span class="op">~</span><span class="st"> </span>mass.fem.log,
+              <span class="dt">data =</span> milk_primates)</code></pre></div>
+<p>We can check the residuals again</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(<span class="kw">resid</span>(lm.mass.log.fat))</code></pre></div>
+<p><img src="g-linear_reg_diagnostics_files/figure-html/unnamed-chunk-26-1.png" width="700"></p>
+<p>This is maybe a bit better. One problem with a log transformation is that we are working with a percentage, and so that natural transformation is actually the <strong>logit transformation</strong>.</p>
+<p>The arm package has a logit() function. Note that we have to divied fat by 100 because the original data was expressed as a percentage, and arm::logit() wants a fractional value</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">milk_primates &lt;-<span class="st"> </span>milk_primates <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">fat.logit =</span> arm<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/arm/topics/invlogit">logit</a></span>(fat<span class="op">/</span><span class="dv">100</span>))</code></pre></div>
+<p>Refit the model</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lm.mass.logit.fat &lt;-<span class="st"> </span><span class="kw">lm</span>(fat.logit <span class="op">~</span><span class="st"> </span>mass.fem.log,
+              <span class="dt">data =</span> milk_primates)</code></pre></div>
+<p>This is maybe a little more symetrical, but still pretty pointy.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(<span class="kw">resid</span>(lm.mass.logit.fat))</code></pre></div>
+<p><img src="g-linear_reg_diagnostics_files/figure-html/unnamed-chunk-29-1.png" width="700"></p>
+<p>Some people like to do a test for normality. One option is The Shapiro-Wilk normality test. This can be done with shapiro.test(). Its interesting to compare the results of this test for the three models we’ve run. Below, I run the model and add “$p” to the outside of the call to the model to get just the p-value.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">shapiro.test</span>(<span class="kw">resid</span>(lm.mass))<span class="op">$</span>p
+<span class="co">#&gt; [1] 0.004082116</span>
+<span class="kw">shapiro.test</span>(<span class="kw">resid</span>(lm.mass.log.fat))<span class="op">$</span>p
+<span class="co">#&gt; [1] 0.1935287</span>
+<span class="kw">shapiro.test</span>(<span class="kw">resid</span>(lm.mass.logit.fat))<span class="op">$</span>p
+<span class="co">#&gt; [1] 0.3969284</span></code></pre></div>
+<p>The first, untransformed model, has a low p-value, meaning we would reject the hypothesis of normality. FOr both of the transformations, we cannot reject the null of normality.</p>
+<p>There are two general problems with testing for assumptions like this</p>
+<ol style="list-style-type: decimal">
+<li>A high p-value doesn’t mean that the assumption is true, it just means you fail to reject the null hypothesis that the assumption is true.</li>
+<li>Usually tests for one assumption (normality) are sensitive to whether the other assumptions are true (constant variance). That is, you often can’t have a valid test for normality if variance is not constant.</li>
+</ol>
 <p><a href="https://ademos.people.uic.edu/Chapter12.html#2_regression_assumptions" class="uri">https://ademos.people.uic.edu/Chapter12.html#2_regression_assumptions</a> <a href="https://ademos.people.uic.edu/Chapter12.html#32_testing_for_outliers:_outliertest" class="uri">https://ademos.people.uic.edu/Chapter12.html#32_testing_for_outliers:_outliertest</a>()</p>
 <p>car::outlierTest() car::ncvTest() car::crPlots()</p>
 <p>Pena &amp; Slate. 2006. <a href="https://doi.org/10.1198/016214505000000637">Global Validation of Linear Model Assumptions. Am Stat.</a></p>
@@ -129,9 +328,23 @@
 <p><a href="https://www.statmethods.net/stats/rdiagnostics.html">Quick-R: Regression Diagnostics</a></p>
 <p>Altman &amp; Krzywinski. 2016. <a href="https://www.nature.com/articles/nmeth.3854">Regression diagnostics. Nature Methods.</a></p>
 <p>Zhang 2016. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4885900/">Residuals and regression diagnostics: focusing on logistic regression. Annals of Translational Medicine.</a></p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
+        <div id="tocnav">
+      <h2 class="hasAnchor">
+<a href="#tocnav" class="anchor"></a>Contents</h2>
+      <ul class="nav nav-pills nav-stacked">
+<li><a href="#introduction">Introduction</a></li>
+      <li><a href="#preliminaries">Preliminaries</a></li>
+      <li><a href="#fit-the-linear-model">Fit the linear model</a></li>
+      <li><a href="#residuals">Residuals</a></li>
+      <li><a href="#accessing-residuals">Accessing residuals</a></li>
+      <li><a href="#residuals-should-sum-to-zero">Residuals should sum to zero</a></li>
+      <li><a href="#residuals-should-be-normal">Residuals should be normal</a></li>
+      </ul>
+</div>
       </div>
 
 </div>

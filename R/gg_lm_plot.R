@@ -40,11 +40,11 @@ gg_lm_plot <- function(mod,
   plot. <- ggplot2::ggplot(dat,
          aes_string(x = names(dat)[2],
                     y = names(dat)[1])) +
-    geom_point() +
-    stat_smooth(method = "lm",
+    ggplot2::geom_point() +
+    ggplot2::stat_smooth(method = "lm",
                 col = "red") +
-    xlab(xlab.) +
-    ylab(ylab.)
+    ggplot2::xlab(xlab.) +
+    ggplot2::ylab(ylab.)
 
   if(annotate. == "summary"){
     plot. <- cowplot::add_sub(plot., summary.)

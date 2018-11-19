@@ -434,7 +434,7 @@ AICtab(base = TRUE,
 **QUESTION**
 
 * What might be the impact of having missing data (As) for some of your predictors but not others?  
-    + FOr example, what if you had "biome" data for every mammals species
+    + For example, what if you had "biome" data for every mammals species
     + but you don't have diet info for 10 of the species
     + When you lack data for a predictor and include that predictor in the model, R drops the entire row of data from the analysis
     
@@ -540,7 +540,7 @@ AICtab(base = TRUE,
 
 
 
-The original and "fake" modles with just lacations duration as a predictor are the same b/c they are fit to the same dataset
+The original and "fake" models with just lactation duration as a predictor are the same b/c they are fit to the same dataset
 ```{r}
 AICtab(base = TRUE,
        m.rel.lac,
@@ -550,7 +550,7 @@ AICtab(base = TRUE,
 
 
 
-The original and "fake" modles with "diet" add have different AICs because they are fit to differnet datas
+The original and "fake" models with "diet" add have different AICs because they are fit to different data
 ```{r}
 AICtab(base = TRUE,
        m.rel.lac.diet,
@@ -559,7 +559,7 @@ AICtab(base = TRUE,
 
 
 
-We will only see an error if we use AICc.  THis is because AICc incorporates sample size into its equation
+We will only see an error if we use AICc.  This is because AICc incorporates sample size into its equation
 
 ```{r, echo = F}
 ICtab(base = TRUE,
@@ -623,7 +623,7 @@ What do you thin about these residuals?
 
 * The best way to check a model is to plot it against the raw data. 
 * To make our life simpler we'll just consider the model that had lactation duration and diet 
-    + That is, we'll ingore the "biome" predictor.  
+    + That is, we'll ignore the "biome" predictor.  
 * This will take a bit of work because the categorical predictor has three levels
 * In general ggplot() has better facilities for doing this, but the syntax is very different from plot()
 * Also setting this up is good practice for basic R skills
@@ -648,12 +648,12 @@ i.herb <- which(dat2$diet == "herbivore")
 * then overlay carnivores in red (col = "red" or col = 2)
 * and herbivores in green (col = "green" or col = 3)
 * use points() to add new elements to a plot
-* Note use of indicies to select the subset of data being used
-    + data = dat2[i.carn,] for canivores
+* Note use of indices to select the subset of data being used
+    + data = dat2[i.carn,] for carnivores
     + data = dat2[i.herb,] for herbivores
 * Legend gets added with length()
     + ggplot also makes pretty good legend on the fly
-    + why don't I just invest the effort to each ggplot from the begining...
+    + why don't I just invest the effort to each ggplot from the beginning...
 
 ```{r}
 #plot all raw data
@@ -688,7 +688,7 @@ legend("bottomleft",
 ## Add regression lines
 
 * To plot the regression lines I'll generate predictions (y.hat values) using predict().  
-* This uses the regression equation from the specificed model (f.lact.biome.diet) and plugs in observed values (xs) for the 3 predictors (relative lactation duration, biome, and diet).
+* This uses the regression equation from the specified model (f.lact.biome.diet) and plugs in observed values (xs) for the 3 predictors (relative lactation duration, biome, and diet).
 * This requires a bit of code b/c there are 3 levels to the diet variable
 
 
@@ -698,7 +698,7 @@ Generate predictions for plotting works best if we create a new dataframe with o
 
 
 
-The range of lacation duration values
+The range of lactation duration values
 ```{r}
 # ranges uses min() and max()
 rng <- range(dat2[,"rel.lact.log10"])
@@ -709,7 +709,7 @@ rng <- range(dat2[,"rel.lact.log10"])
 
 Levels of the factor variables.  
 
-* THese are accessed with the levels() command
+* These are accessed with the levels() command
 ```{r}
 #levels of the diet factor
 levs1 <- levels(dat2[,"diet"])
@@ -723,10 +723,10 @@ levs2 <- levels(dat2[,"biome"])
 ```
 
 
-Create a new dataframe from which to generate predictiosn
+Create a new dataframe from which to generate predictions
 
 * This uses the expand.grid function
-* This generates all combinations of the varibles that are given
+* This generates all combinations of the variables that are given
 
 ```{r}
 newdat <- expand.grid(rel.lact.log10 = rng,
@@ -743,7 +743,7 @@ Note: I'm using the model with lactation and diet (f.lact.diet), NOT the one bes
 ### Generate prediction
 
 * use predict()
-* give it themodel in question, "f.lact.diet""
+* give it the model in question, "f.lact.diet""
 * give it the new data we made with expand.grid()
     + y.hat is the fancy name for model predictions
 
@@ -784,7 +784,7 @@ y.hat - y = ??????
 y.hat - y = residuals
 
 
-Add the y.hat values (predictions) to the newdat datafrme
+Add the y.hat values (predictions) to the newdat dataframe
 
 ```{r}
 newdat$fat.y.hat <- y.hat
@@ -795,8 +795,8 @@ newdat$fat.y.hat <- y.hat
 ## Plot everything
 
 * Now plot the lines define by the y.hat values
-* Since we're using Rmarkdown we have to include both the code to plot the points in the chunk, followed by the code for the lines. 
-* Note that the regression lines will be plotted with points() also, with the arguement "type = 'l'" for lines.
+* Since we're using RMarkdown we have to include both the code to plot the points in the chunk, followed by the code for the lines. 
+* Note that the regression lines will be plotted with points() also, with the argument "type = 'l'" for lines.
 
 
 
@@ -853,7 +853,7 @@ points(fat.y.hat ~ rel.lact.log10,
 
 
 **QUESTION**
-It looks like the herbiore and omnivore lines are almost exaclty on top of each other. What does this mean?
+It looks like the herbivore and omnivore lines are almost exactly on top of each other. What does this mean?
 
 
 
@@ -931,7 +931,7 @@ How do you write this as a regression equation?
 **GENERAL MODEL STATEMENT**
 y = Intercept + rel.lact.log10 + diet
 
-The "diet" catagory has 3 levels
+The "diet" category has 3 levels
 
 
 **EQUATION WITH COEFFICIENTS**
@@ -941,14 +941,14 @@ y = 1.2 + -0.45*rel.lact.log10
 
 
 * The intercept of 1.2 corresponds to carnivores
-* -0.58 is the differene between carnviores and herbivores
-* -0.57 is the differene between carnviores and omnivore
+* -0.58 is the difference between carnivores and herbivores
+* -0.57 is the difference between carnivores and omnivore
 
 
 # Back to heterogeneity of variance
 
-* Our regression line for carnivorees fits those species pretty well, but the omni- and herbivore lines don't fit their data well.  
-* This indicates the source of our hetergenity of variance problem:
+* Our regression line for carnivores fits those species pretty well, but the omni- and herbivore lines don't fit their data well.  
+* This indicates the source of our heterogeneity of variance problem:
 
 
 
@@ -956,7 +956,7 @@ y = 1.2 + -0.45*rel.lact.log10
 
 ## Visualize coefficients
 
-Here's a trick: I"m going to put all of our plotting code intoa function
+Here's a trick: I"m going to put all of our plotting code into a function
 
 
 ```{r}
