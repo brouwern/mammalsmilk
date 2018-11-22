@@ -84,7 +84,7 @@
       <a href="../articles/f3-linear_reg_model_fit.html">f3) Linear regression as model fitting</a>
     </li>
     <li>
-      <a href="../articles/g-linear_reg_diagnostics.html">g) Regression diagnostics</a>
+      <a href="../articles/g-linear_reg_diagnostics.html">g) Regression diagnostics &amp; Residual Analysis</a>
     </li>
     <li>
       <a href="../articles/z-building_a_package.html">z) Creating this package</a>
@@ -113,7 +113,7 @@
                         <h4 class="author">Nathan Brouwer | <a href="mailto:brouwern@gmail.com">brouwern@gmail.com</a> | <span class="citation">@lowbrowR</span>
 </h4>
             
-            <h4 class="date">2018-11-19</h4>
+            <h4 class="date">2018-11-21</h4>
       
       
       <div class="hidden name"><code>d-data_exploration.Rmd</code></div>
@@ -156,10 +156,10 @@
 <a href="#load-packages" class="anchor"></a>Load packages</h3>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(cowplot)
-<span class="kw">library</span>(ggpubr)
 <span class="kw">library</span>(arm)
 <span class="kw">library</span>(dplyr)
-<span class="kw">library</span>(GGally)</code></pre></div>
+<span class="co">#library(GGally)</span>
+<span class="kw">library</span>(ggpubr)</code></pre></div>
 </div>
 <div id="loading-the-mammalsmilk-package" class="section level3">
 <h3 class="hasAnchor">
@@ -321,6 +321,7 @@ ylab. &lt;-<span class="st"> "Continous y: </span><span class="ch">\n</span><spa
       <span class="dt">main =</span> main.,
       <span class="dt">xlab =</span> xlab.,
       <span class="dt">ylab =</span> ylab.) </code></pre></div>
+<p><img src="d-data_exploration_files/figure-html/gg1-1.png" width="700"></p>
 </div>
 </div>
 </div>
@@ -344,7 +345,7 @@ ylab. &lt;-<span class="st"> "Continous y: </span><span class="ch">\n</span><spa
 <p>Plot transformed data</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">main.new &lt;-<span class="st">"Regression data: continous vs log(continuous)"</span> 
 
-<span class="kw">ggscatter</span>(<span class="dt">y =</span> <span class="st">"fat"</span>,
+ggpubr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/ggscatter">ggscatter</a></span>(<span class="dt">y =</span> <span class="st">"fat"</span>,
       <span class="dt">x =</span> <span class="st">"mass.fem.log"</span>,
       <span class="dt">data =</span> milk,
       <span class="dt">main =</span> main.new,
@@ -431,12 +432,7 @@ ylab. &lt;-<span class="st"> "Continous y: </span><span class="ch">\n</span><spa
 <a href="#plot-working-data-milk-fat-female-size" class="anchor"></a>Plot working data: milk fat ~ female size</h2>
 <p>Do log transform</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">milk_primates &lt;-<span class="st"> </span>milk_primates <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">mass.fem.log =</span> <span class="kw">log</span>(mass.fem))</code></pre></div>
-<p>Make scatterplot; <strong>ggscatterhist()</strong> allows plots to be put in margin</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggscatterhist</span>(<span class="dt">y =</span> <span class="st">"fat"</span>,
-      <span class="dt">x =</span> <span class="st">"mass.fem.log"</span>,
-      <span class="dt">data =</span> milk_primates,
-      <span class="dt">margin.plot =</span> <span class="st">"boxplot"</span>) </code></pre></div>
-<p><img src="d-data_exploration_files/figure-html/unnamed-chunk-26-1.png" width="700"></p>
+<p>Make scatterplot; <strong>ggscatterhist()</strong> allows plots to be put in margin <img src="d-data_exploration_files/figure-html/unnamed-chunk-26-1.png" width="700"></p>
 </div>
 <div id="add-labels" class="section level2">
 <h2 class="hasAnchor">
@@ -577,9 +573,13 @@ by.order &lt;-<span class="st"> </span><span class="kw">ggscatter</span>(<span c
 <h2 class="hasAnchor">
 <a href="#correlations-among-predictors" class="anchor"></a>Correlations among predictors</h2>
 <p>ALl of the graphs of all of the predictors looked basically the same. One reason is that all of the predictors are highly correlated, so they are all basically indicating something similar about the animals.</p>
-<p>We can get a sense for these correlations using the ggpairs() fucntion in the GGally package.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vars. &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"fat"</span>,<span class="st">"gest.mo.log"</span>,
-           <span class="st">"mass.fem.log"</span>,<span class="st">"lacat.mo.log"</span>  ,  <span class="st">"mass.litter.log"</span>)
+<p>We can get a sense for these correlations using the ggpairs() function in the GGally package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vars. &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"fat"</span>,
+           <span class="st">"gest.mo.log"</span>,
+           <span class="st">"mass.fem.log"</span>,
+           <span class="st">"lacat.mo.log"</span>  , 
+           <span class="st">"mass.litter.log"</span>)
+
 GGally<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/GGally/topics/ggpairs">ggpairs</a></span>(<span class="dt">data =</span> milk_primates,
         <span class="dt">column =</span> vars.,
         <span class="dt">diag =</span><span class="ot">NULL</span> )</code></pre></div>

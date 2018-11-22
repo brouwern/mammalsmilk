@@ -169,6 +169,13 @@ use_r("milk_fat")
 ```
 
 
+## License
+
+http://kbroman.org/pkg_primer/pages/licenses.html
+
+```{r, eval = F}
+usethis::use_mit_license(name = "Nathan Brouwer")
+```
 
 
 
@@ -224,7 +231,12 @@ devtools::build_vignettes()
 ```
 
 "This uses a fairly rudimentary algorithm where any files in ‘inst/doc’ with a name that exists in ‘vignettes’ are removed."
+
+```{r, eval = F}
+
 clean_vignettes() 
+```
+
 
 ## pckgdown functions
 
@@ -232,8 +244,35 @@ clean_vignettes()
 pkgdown::build_site()
 ```
 
-
-```{r}
 check_failures
+```{r}
+
 ```
+
+
+## Rcmd.exe
+"Clean and rebuild"
+==> Rcmd.exe INSTALL --preclean --no-multiarch --with-keep.source mammalsmilk
+
+"Install restart"
+==> Rcmd.exe INSTALL --no-multiarch --with-keep.source mammalsmilk
+
+## Devtools function
+
+
+```{r, eval = F}
+## "Document"
+devtools::document(roclets=c('rd', 'collate', 'namespace'))
+
+## "Load all"
+devtools::load_all(".")
+
+## devtools::build_vignettes()
+
+## "Check"
+devtools::check()
+```
+
+
+
 

@@ -12,7 +12,7 @@ vignette: >
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = FALSE)
 ```
 
 
@@ -48,10 +48,10 @@ Finally, there are columns containing taxonomic information
 ```{r}
 library(ggplot2)
 library(cowplot)
-library(ggpubr)
 library(arm)
 library(dplyr)
-library(GGally)
+#library(GGally)
+library(ggpubr)
 ```
 
 
@@ -120,7 +120,7 @@ table.fam
 ```
 
 Plot as barplot; some added gplot code to rotate the axis lables
-```{r}
+```{r, eval = T}
 ggbarplot(data = table.fam,
           y = "freq",
           x = "fam") +
@@ -163,7 +163,7 @@ table.ord
 * Lagomorpha = 3
 
 
-```{r}
+```{r, eval = T}
 ggbarplot(data = table.ord,
           y = "freq",
           x = "ord") +
@@ -191,7 +191,7 @@ ylab. <- "Continous y: \nfat contenxt of milk"
 
 Note that the plot is dominated an outlier, which the whales!
 
-```{r}
+```{r, eval = T}
 ggscatter(y = "fat",
       x = "mass.fem",
       data = milk,
@@ -202,7 +202,7 @@ ggscatter(y = "fat",
 
 
 A similar graph can be made using the stock ggplot function qplot(), except the variables are not quoted
-```{r gg1, eval = F}
+```{r gg1, eval = T}
 qplot(y = fat,       # no " " !
       x = mass.fem,
       data = milk,
@@ -235,10 +235,10 @@ summary(milk$mass.fem.log)
 
 
 Plot transformed data
-```{r}
+```{r, eval = T}
 main.new <-"Regression data: continous vs log(continuous)" 
 
-ggscatter(y = "fat",
+ggpubr::ggscatter(y = "fat",
       x = "mass.fem.log",
       data = milk,
       main = main.new,
@@ -252,7 +252,7 @@ ggscatter(y = "fat",
 
 Helps visualize trends
 
-```{r}
+```{r, eval = T}
 ggscatter(y = "fat",
       x = "mass.fem.log",
       add = "loess",     #smoother
@@ -270,7 +270,7 @@ ggscatter(y = "fat",
 
 Color-code diets.  This might take a second to render.
 
-```{r}
+```{r, eval = T}
 ggscatter(y = "fat",
       x = "mass.fem.log",
       color = "diet",
@@ -291,7 +291,7 @@ ggscatter(y = "fat",
 * This shows that "aquatic" and "diet" are "Confounded"
 
 
-```{r}
+```{r, eval = T}
 ggscatter(y = "fat",
       x = "mass.fem.log",
       color = "diet",
@@ -309,7 +309,7 @@ ggscatter(y = "fat",
 
 It can be useful to make boxplot just by categorical variables.  For me, this plot highlights that almost all carnivores are aquatic, and they have a wide range of fat contents.
 
-```{r, echo = T}
+```{r, echo = T, eval = T}
 ggboxplot(data = milk,
           add = "jitter",
           color = "biome",
@@ -361,7 +361,7 @@ milk_primates <- milk_primates %>% dplyr::mutate(mass.fem.log = log(mass.fem))
 
 
 Make scatterplot; **ggscatterhist()** allows plots to be put in margin
-```{r, echo = T}
+```{r, echo = F, eval = T}
 ggscatterhist(y = "fat",
       x = "mass.fem.log",
       data = milk_primates,
@@ -394,7 +394,7 @@ milk_primates$spp.focal <- gsub("(^.*)( )(.*)","\\1",milk_primates$spp.focal)
 ```
 
 plot with names using some fancier ggplot code.  
-```{r}
+```{r, eval = T}
 ggplot(data = milk_primates,
        aes(y = fat,
       x = mass.fem.log)) + 
@@ -413,7 +413,7 @@ ggplot(data = milk_primates,
 * Grey areas is "confidence band"
 
 
-```{r, echo = T}
+```{r, echo = T, eval = T}
 ggscatter(y = "fat",
       x = "mass.fem.log",
       add = "reg.line",   #regression line
@@ -423,7 +423,7 @@ ggscatter(y = "fat",
 
 
 Color code by
-```{r}
+```{r, eval = T}
 ggscatter(y = "fat",
       x = "mass.fem.log",
       color = "ord",
@@ -454,7 +454,7 @@ Let's look at a relationship fat ~ log(gest.month)
 
 Compare all data compiled with by order
 
-```{r, echo = T}
+```{r, echo = T, eval = T}
 #all data combined
 no.order <- ggscatter(y = "fat",
       x = "gest.mo.log",
@@ -484,7 +484,7 @@ plot_grid(no.order,by.order)
 Another relationship to consider fat ~ log(lacat.mo)
 
 Compare all data compiled with by order
-```{r, echo = T}
+```{r, echo = T, eval = T}
 no.order <- ggscatter(y = "fat",
       x = "lacat.mo.log",
       data = milk_primates,
@@ -517,7 +517,7 @@ Again, however, there is strong phyolgenetic single.  Within
 * % Fat generally declines as litter size  increases
 * more or bigger babies, less milk fat
 
-```{r, echo = T}
+```{r, echo = T, eval = T}
 no.order <- ggscatter(y = "fat",
       x = "mass.litter.log",
       data = milk_primates,
@@ -542,11 +542,15 @@ plot_grid(no.order,by.order)
 
 ALl of the graphs of all of the predictors looked basically the same.  One reason is that all of the predictors are highly correlated, so they are all basically indicating something similar about the animals.
 
-We can get a sense for these correlations using the ggpairs() fucntion in the GGally package.
+We can get a sense for these correlations using the ggpairs() function in the GGally package.
 
 ```{r}
-vars. <- c("fat","gest.mo.log",
-           "mass.fem.log","lacat.mo.log"  ,  "mass.litter.log")
+vars. <- c("fat",
+           "gest.mo.log",
+           "mass.fem.log",
+           "lacat.mo.log"  , 
+           "mass.litter.log")
+
 GGally::ggpairs(data = milk_primates,
         column = vars.,
         diag =NULL )

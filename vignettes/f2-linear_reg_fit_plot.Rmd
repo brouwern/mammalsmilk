@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = FALSE)
 ```
 
 ## Introduction
@@ -28,7 +28,7 @@ In this tutorial, we will examine the relationship between the fat content of th
 ### Load data 
 
 Install the mammals milk package if needed.
-```{r}
+```{r install.git.chunk}
 # install_github("brouwern/mammalsmilk")
 ```
 
@@ -47,11 +47,11 @@ data("milk_primates")
 ### Load libraries
 
 ```{r}
-library(ggplot2)
-library(ggpubr)
+#library(ggplot2)
 library(cowplot)
 library(arm)
 library(broom)
+library(ggpubr)
 ```
 
 
@@ -71,7 +71,7 @@ The data has been cleaned in previous tutorials.  One thing that will make model
 
 If we look at the raw data its pretty ugly
 
-```{r}
+```{r first.ggscagtter.chunk}
 ggscatter(data = milk_primates,
          y = "fat",
          x = "mass.fem")
@@ -97,7 +97,7 @@ milk_primates$mass.fem.log <- log(milk_primates$mass.fem)
 ```
 
 Now check out the plot
-```{r}
+```{r second.ggscatter.chunk}
 ggscatter(data = milk_primates,
          y = "fat",
          x = "mass.fem.log")

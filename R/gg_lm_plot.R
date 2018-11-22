@@ -9,8 +9,8 @@ gg_lm_plot <- function(mod,
                        rnd = 2,
                        annotate. = "summary"){
 
-  require(ggplot2)
-  require(cowplot)
+  #require(ggplot2)
+  #require(cowplot)
 
   dat <- mod$model
 

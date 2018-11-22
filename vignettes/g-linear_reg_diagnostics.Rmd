@@ -1,6 +1,6 @@
 ---
-title: "g) Regression diagnostics"
-author: "Vignette Author"
+title: "g) Regression diagnostics & Residual Analysis"
+author: "Nathan Brouwer | brouwern@gmail.com | @lobrowR"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -21,26 +21,60 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-In order for inference from a regression model to be valid several assumptions need to be reasonably met:
+A fitted regression model can be thought of as producing several things.  
 
-1. The residuals are normally distributed (normality assumption)
-1. The residuals have a constant variance accross the range of the predictor (assumption of constant variance, aka "homoskedasticity")
-1. Data points are independent of one another; that is, the data points don't occur in meaningful groups (such as familities), data points collected spatially close to each other related, and data points collected close to each other in time are related.
-1. The true relationship between the preditor x and response y is indeed linear
+1. First, the model produces an equation with an intercept and slope coefficients(s) which describe the relationship between the y and the x variable.  
+1. Second, the model produces p-values and confidence intervals that allow us characterize how precisely the slope coefficients have been estimated and whether we can consider each one them to be different than a null model with slope equal to 0.  
+1. Third, the regression model yields estimated y-values for each observed x-value, which represent the expected mean if we were to have many more observations with the same value for the x variable(s).  Confidence intervals can be constructed around these predicted values.  
+1.  As an extension of the previous point, the regression equation can be used to make predictions for values of the x variable(s) that were not actually observed.  Its not usually framed this way, but consideration of all possible predicted values across the range of the x variables produces the regression line plotted through the scatterplot of the data, and calculation of confidence intervals for all of these x values produces a confidence band around the regression line.
 
-These are in approximate order of increasing importance (Gelman and Hill 2007).  Historically, biologists have been very concerned with normality, perhaps because its the easiest to attempt to test, but its frequently not a big deal.  Normality can usually be improved using a log transformation.
+These products of the regression model are all dependent on the data fed into the model.  Different data will often result in different estimates for the regression parameters, different p-values, and different predicted values and their confidence intervals.  In particular, outliers can sometimes dramatically change regression parameters.
 
-The assumption of constant variance is more important.  This is the same assumption as in t-test and ANOVA of homogenous variances in each group.  My impression is that biologists have typically thought about this more for t-tests and ANOVA, and less for regression, but don't quote me on that.   Log transformation can improve homoskedasticity.  
+Similarly, results can be dependent  the intricacies of the structure of the data and, if multiple predictor variables are being used (multiple regression) inter-relationships among the variables are important.  For example, if two predictor variables are highly correlated ( [collinear](https://en.wikipedia.org/wiki/Multicollinearity) ) and both are included in a multiple regression model then their slopes can be highly biased even if the overall regression model fits the data well.  (want to mention [Anscombe's quartet](https://en.wikipedia.org/wiki/Anscombe%27s_quartet) here but don't know how to fit it in)
 
-Independence is a big deal, and can only be addressed using more advanced models.   The other assumptions can be probed using graphical displays (favored by most) or statistical tests (still used by some).   The impacts of some forms of non-independence can be explored in the data (temporal and spatial correlations) but others might only be apparent from the design of the study (grouping, clustering). 
+Finally, the validity of inference based on p-values and confidence intervals can be contingent on how well the data meet certain assumptions about  its normality and the constancy of its variance.
 
-The non-independence of data points can occur due to things being grouped physically together, such as mice sharing a cage, or otherwise sharing a related condition, such as patients who were all treated by the same doctor.  Things that are otherwise independent, such as two trees of different species growing in a forest, might experience similiar environmental conditions if they are close to each other, or could experience very different conditions if they are far apart.  "Spatial autocorrelation" is a non-indepndence that occurs due to spatial proximity, while "temporal autocorrelation" occurs due to proximity in time.
+The first part of this tutorial looks into the assumptions that must be reasonably met by the data in order for p-values and confidence intervals to be meaningful and the diagnostics tools we use to assess this.  The second part looks into how outliers and influential points can impact regression models.  Issues of collinearity will be addressed (hopefully) in a subsequent tutorial.
 
-In this tutorial we'll look at our model of milk fat versus female (maternal) body size and examine if these data meet these assumptions.
 
+
+
+## Regression assumptions
+
+In order for inference from a regression model to be valid several assumptions need to be reasonably met.  These assumptions are best framed in terms of the **residuals** of a model: the vertical distance between the regression line and each data point.  In this tutorial I'll first review key regression assumptions, illustrate what residuals are, and discuss various types of **regression diagnostics** based on **outlier anlaysis**.  I'll also discuss related diagnostic considerations that are not strictly linked to regression assumptions but which need to be considered, in particular **outlier analysis**.
+
+
+
+
+## Regression assumptions
+
+The key assumptions of regression are:
+
+1. **Normality**: The residuals are normally distributed.  Normality can be compromised if the distribution is too peaked (**peakedness**), the tails too fat ([**kurtosis**](https://en.wikipedia.org/wiki/Kurtosis)), or one tail is is too long (**skew**)
+1. **Homoskedasticity / constant variance**: The residuals have a constant variance across the range of the predictor (non-constant variance is [**Heteroscedasticity**[(https://en.wikipedia.org/wiki/Heteroscedasticity)])
+1. **Independence**: Data points are independent of one another; that is, the data points don't occur in meaningful groups or **clusters** (such as families), data points collected spatially close to each other aren't related ([**spatial autocorrelation**](https://en.wikipedia.org/wiki/Spatial_analysis#Spatial_dependency_or_auto-correlation)), and data points collected close to each other in time are aren't related (**temporal autocorrelation**).  
+1. **Linearity**: The true relationship between the predictor x and response y is indeed linear
+
+These are in approximate order of increasing importance (Gelman and Hill 2007).  Historically, biologists have been very concerned with **normality**, perhaps because it's the easiest to attempt to test, but its frequently not a big deal because violations of this assumption tend not to throw of regression results; this is because linear models tend to be very **robust** to violations of the normality assumption.  Normality can often be improved using a log transformation; it never hurts to do this as long as you keep in mind that you are working on a log-transformed scale.
+
+The assumption of **constant variance** is more important.  This is the same assumption as in t-tests and ANOVA of **homogenous variances** in each group.  My impression is that biologists have typically thought about this more for t-tests and ANOVA, and less for regression, but don't quote me on that.   Log transformation can improve homoskedasticity.  When this doesn't help enough, it can be useful to fit a more complex regression or ANOVA model which can explicitly accommodate changes in variances.  
+
+**Independence** is a big deal, and can only be addressed using more advanced models *or by re-doing an experiment with a different design!).   The other assumptions can be probed using graphical displays (favored by most) or statistical tests (still used by some).  The impacts of some forms of non-independence can be explored in the data (temporal and spatial correlations) but others might only be apparent from the design of the study (grouping, clustering). 
+
+**Non-independence** of data points can occur due to things being grouped physically together, such as mice sharing a cage, or otherwise sharing a related condition, such as patients who were all treated by the same doctor or students who all have the same professor.  Things that are otherwise independent, such as two trees of different species growing in a forest, might experience similar environmental conditions if they are close to each other, or could experience very different conditions if they are far apart.  [**Spatial autocorrelation**](https://en.wikipedia.org/wiki/Spatial_analysis#Spatial_dependency_or_auto-correlation) is a non-independence that occurs due to spatial proximity, while **temporal autocorrelation** occurs due to proximity in time.
+
+## Misconceptions about assumptions
+
+There are several common misconceptions about assumptions.  Probably the most serious one is that if you violate an assumption that you must defer to **non-parametric statistical test** which makes fewer assumptions.  This often involves using a **rank based** method.  This is often unnecessary because regression and other linear models (t-tests, ANOVA) are very robust to violations of the normality assumption, and somewhat robust to the others.  Also, rank-based non-parametric methods involve converting your previous numeric data to just their relative ranks, which tosses out much of the information content of the data.
+
+The second most serious misconception is that the normality assumption relates to the raw data.  This only applies to t-tests and ANOVA if you first divide the data up into each group being tested for differences; it is never true for regression data.  The normality assumption is in regards to the residuals of the model, not the raw data.  The residuals can be thought of as what's left of the data after the proposed treatment effects (t-tests, ANOVA) or effect of a continuous predictor (regression) are removed.  Splitting data to be analyzed by a t-test or ANOVA up into groups then looking for normality is therefore mathematically equivalent to fitting the model and then looking at the residuals.
+
+The third misconception is one that isn't well known, and is minor:  the term **kurtosis** is often used as a technical term for how **peaked** a distribution is.  In actuality, kurtosis only relates to the tails of the distribution (Westfall 2014: Kurtosis as Peakedness, 1905–2014. R.I.P.  [Am. Stat.](https://www.tandfonline.com/doi/abs/10.1080/00031305.2014.917055)).  I wasn't aware of this until I was doing some research for this lesson!
 
 
 ## Preliminaries
+
+In this tutorial we'll look at our model of milk fat versus female (maternal) body size and examine if these data meet these assumptions.
 
 ### Load data 
 
@@ -61,7 +95,7 @@ data("milk_primates")
 ```
 
 
-Log transformation makes things more linear.
+Log transformation of the predictor makes things more linear.
 
 ```{r}
 #this could be done with dplyr::mutate() too
@@ -71,13 +105,17 @@ milk_primates$mass.fem.log <- log(milk_primates$mass.fem)
 
 ### Load libraries
 
+Load the standard libraries
 ```{r}
 library(ggplot2)
 library(ggpubr)
 library(cowplot)
-library(bbmle)
-library(broom)
+```
+
+Load some you might not have downloaded
+```{r}
 library(arm)
+library(ggfortify)
 ```
 
 
@@ -86,7 +124,7 @@ Note that library() won't load a package that you haven't previously downloaded!
 
 
 
-## Fit the linear model
+## Fit & visualize the linear model
 
 Recall that our data look like this
 ```{r}
@@ -104,7 +142,7 @@ lm.mass <- lm(fat ~ mass.fem.log,
               data = milk_primates)
 ```
 
-We can get the intercept and slope of the modle using the coef() function
+We can get the intercept and slope of the model using the coef() function
 
 ```{r}
 coef(lm.mass)
@@ -114,81 +152,93 @@ This indicates that the line through the data points is described by the equatio
 
 > fat = 20.51 + -1.75*log(female mass)
 
-If we want to estimate the fat content of a primate with a body mass of 65kg grams we could calculate to get the mass in grams.
+If we want to estimate the fat content of a primate with a body mass of 65kg grams we first need to get the mass in grams.
 
 ```{r}
 mass.grams <- (65*1000)
 mass.grams
 ```
 
-Then plug this into the equation
+Then plug this into the regression equation
 
 ```{r}
 20.51 + -1.75*log(mass.grams)
 ```
 
-We would predict that a primate weighting 65 kg (65000 grams; or a rodent of unusual size, since we included them in our data too) would have a milk fat content of 1.12 %.
+[To add: show how to write a function for the equation]
 
-We see this if we find where our x value intercepts the regression line, and then trace it back to the y axis.  We can draw lines on our graph using geome_hline and geom_vline (h=horizontal, v = vertical)
+We would predict that a primate weighting 65 kg (65000 grams; or a [rodent of unusual size](https://insider.si.edu/2009/09/new-species-of-giant-rat-discovered-in-crater-of-volcano-in-papua-new-guinea/), since we included them in our data too) would have a milk fat content of 1.12 %.
+
+We can find where our x value intercepts the regression line, and then trace it back to the y axis.  We can draw lines on our graph using ggplot's geom_hline() and geom_vline() (h=horizontal, v = vertical)
 
 
 We can see where our 65kg mammal would be along the x axis like this 
 ```{r}
 gg.milk + 
-  geom_vline(xintercept = log(mass.grams))
+  geom_vline(xintercept = log(mass.grams),
+             color = "red")
 ```
 
-THen trace back to the y axis like this
+Then trace back to the y axis like this
 ```{r}
 gg.milk + 
-  geom_vline(xintercept = log(mass.grams)) +
-  geom_hline(yintercept = 20.51 + -1.75*log(mass.grams))
+  geom_vline(xintercept = log(mass.grams),
+             color = "red") +
+  geom_hline(yintercept = 20.51 + -1.75*log(mass.grams),
+             color = "red")
 ```
 
 
-## Residuals
+## Model Residuals
 
-Residuals are the difference between  observed y value and the one that is predicted by the equation estimated using a regression equation.
+Residuals are the difference between an observed y value and what is predicted by the equation estimated using regression.  (Technically, if you plug and observed x value into a regression, what you get out is a **fitted** y value; if you put in a novel x value not in your data, what you get out is **predicted** value). 
 
-Oour smallest x variable can be found like this.  First, sort the masses in order
+Let's plug in our smallest observed x value and check out its residual.  
+
+Our smallest x variable can be found like this.  First, sort the masses in order using the order() command
 ```{r}
 i <- order(milk_primates$mass.fem)
 ```
 
-Then get just the first value, which is the smallest (default is to sort into increasing order)
+Then get just the first value, which is the smallest (default is to sort into increasing order).  This is done using square brackets [..]
 
 ```{r}
 i1 <- i[1]
 ```
 
-Pick some focal columns
+To make things easy to look at I'll pick some focal columns and put them into a vector called j.
 ```{r}
 j <- c("fat","mass.fem","mass.fem.log","spp") 
 ```
 
-Look at the data associated with the smallest x value
+Now, look at the data associated with the smallest x value
 ```{r}
 milk_primates[i1,j]
 ```
 
-The smallest animal is the mouse Mus musculus, which has a milk fat of 27%.  If we take is log(mass.fem) and plug it into our equation we get a prediciton of its milk fat based on its mass:
+The smallest animal is the mouse *Mus musculus*, which has a milk fat of 27%.  If we take its log(mass.fem) and plug it into our equation we get a prediction of its milk fat based on its mass:
 
+First, pull out mass.
 ```{r}
 mass.mouse <- milk_primates[i1,"mass.fem"]
+```
+
+Then plug this in to the equation
+```{r}
 20.51 + -1.75*log(mass.mouse)
 ```
 
-THe prediciton from the equation is 15.67%, over 11 % lower than what was observed.  The difference between the observed y value (27%) and the predicted value (15.7%) is the **residual** or **error**.  In this case, 27-15.7 = 11.34.
+The prediction from the equation is 15.67%, over 11%  percentage points lower than what was observed.  The difference between the observed y value (27%) and the predicted value (15.7%) is the **residual** or **error**.  In this case, 27-15.7 = 11.34.
 
-## Accessing residuals
+## Accessing residuals in R
 
-We get residuals in R using the resid() command called on a modeling object.
+We get residuals in R using the **resid()** command called on a fitted model object.
 
 ```{r}
 r.i <- resid(lm.mass)
 ```
 
-We can use our index (i1) from above to see what R calcualtes the residual as
+We can use our index (i1) from above to see what R calculates the residual as
 
 ```{r}
 r.i[i1]
@@ -196,7 +246,7 @@ r.i[i1]
 
 R says the residual is 11.34, same as we calculated above.
 
-We can visualize this residual usig geom_segment() 
+We can visualize this residual using **geom_segment()** (sorry, the syntax for geom_segment is a bit dense because we have to specify the x and y coordinates of both ends of the line, and wrap it in ggplot's aes() command)
 ```{r}
 gg.milk +geom_segment(aes(y    = 27,
                           yend = 15.7 ,
@@ -207,18 +257,21 @@ gg.milk +geom_segment(aes(y    = 27,
 
 
 
-We can visualize all of the residuals if we want.  
-
-First, get the data that was fed into the model from the lm.mass object
+We can visualize all of the residuals if we want.  First, get the data that was fed into the model from the lm.mass object
 
 ```{r}
+#all the data
 model.dat <- lm.mass$model
+
+#just the fat column
 fat <-model.dat$fat
+
+#just the log of mass column
 mass.fem.log <- model.dat$mass.fem.log
-r.i <- resid(lm.mass)
+
 ```
 
-Then plot all of the residausl
+Then plot all of the residuals
 ```{r}
 gg.milk +geom_segment(aes(y = fat,
                           yend = fat- r.i,
@@ -231,11 +284,17 @@ gg.milk +geom_segment(aes(y = fat,
 
 ## Residuals should sum to zero
 
-THis isn't a diagnostic, but somethign to thing about with regards to why everything gets squared in statists. 
+This isn't a really diagnostic, but something to think about with regards to why everything gets squared in statistics ("sum of squares", "least squares") 
 ```{r}
 sum(r.i)
 ```
-This is very very very very close to zer.
+This is very very very very close to zero.  This is because a consequence of fitting a regression line properly is that all of the residuals above the line are balanced by residuals below the line.
+
+The mean is also close to zero for the same reasons.
+```{r}
+mean(r.i)
+```
+
 
 ## Residuals should be normal
 
@@ -245,29 +304,39 @@ In order for p-values, confidence intervals etc to be correct the data should be
 hist(r.i)
 ```
 
-These residuals aren't particularly normal.  In the original paper, the author's log transformed fat
+These residuals aren't particularly normal.  In the original paper, the author's log transformed fat to improve normality.
 
 ```{r}
+#transform
 milk_primates <- milk_primates %>% 
   mutate(fat.log = log(fat))
 
 
+#refit model
 lm.mass.log.fat <- lm(fat.log ~ mass.fem.log,
               data = milk_primates)
 ```
 
 We can check the residuals again
-
 ```{r}
 hist(resid(lm.mass.log.fat))
 ```
 
-This is maybe a bit better.  One problem with a log transformation is that we are working with a percentage, and so that natural transformation is actually the **logit transformation**.
+This is maybe a bit better.  
 
-The arm package has a logit() function.  Note that we have to divied fat by 100 because the original data was expressed as a percentage, and arm::logit() wants a fractional value
+One problem with a log transformation is that we are working with a percentage, and so that natural transformation is actually the **logit transformation**.  Previously the arcsine transformation was used for percentages, but this less than ideal for several reasons. (Warton and Hui 2011.  The arcsine is asinine: the analysis of proportions in ecology.  [Ecology](https://esajournals.onlinelibrary.wiley.com/doi/full/10.1890/10-0340.1); see also ["The Arcsine Transformation:
+Has the time come for retirement?"](https://www.researchgate.net/publication/301684020_The_arcsine_transformation_has_the_time_come_for_retirement))
+
+The **arm** package has a handy **logit()** function.  Note that we have to divide fat by 100 because the original data was expressed as a percentage, and arm::logit() wants a fractional value.
+
 ```{r}
+#recalculate as a proportion
+milk_primates <- milk_primates%>% 
+  mutate(fat.proportion = fat/100)
+
+#logit transform
 milk_primates <- milk_primates %>% 
-  mutate(fat.logit = arm::logit(fat/100))
+  mutate(fat.logit = arm::logit(fat.proportion))
 ```
 
 Refit the model
@@ -276,51 +345,350 @@ lm.mass.logit.fat <- lm(fat.logit ~ mass.fem.log,
               data = milk_primates)
 ```
 
-This is maybe a little more symetrical, but still pretty pointy.  
+This is maybe a little more symmetrical, but still pretty pointy.  
 ```{r}
 hist(resid(lm.mass.logit.fat))
 ```
 
 
-Some people like to do a test for normality.  One option is The Shapiro-Wilk normality test.  This can be done with shapiro.test().  Its interesting to compare the results of this test for the three models we've run.  Below, I run the model and add "$p" to the outside of the call to the model to get just the p-value.  
+## Testing for normality
+
+Some people like to do a test for normality.  One option is The **Shapiro-Wilk normality test**.  This can be done with shapiro.test().  Its interesting to compare the results of this test for the three models we've run.  
+
+Below, I run the model and add "$p" to the outside of the call to the model to get just the p-value.  
 ```{r}
 shapiro.test(resid(lm.mass))$p
 shapiro.test(resid(lm.mass.log.fat))$p
 shapiro.test(resid(lm.mass.logit.fat))$p
 ```
 
-The first, untransformed model, has a low p-value, meaning we would reject the hypothesis of normality.  FOr both of the transformations, we cannot reject the null of normality.
+The first, untransformed model, has a low p-value, meaning we would reject the hypothesis of normality.  For both of the transformations, we cannot reject the null of normality.
 
-There are two general problems with testing for assumptions like this 
+### Problems with tests for normality
 
-1. A high p-value doesn't mean that the assumption is true, it just means you fail to reject the null hypothesis that the assumption is true.
-1. Usually tests for one assumption (normality) are sensitive to whether the other assumptions are true (constant variance).  That is, you often can't have a valid test for normality if variance is not constant.
+There are 2 general problems with testing for assumptions like this 
+
+1. A high p-value doesn't mean that the assumption is true, it just means you fail to reject the null hypothesis (Ho) that the assumption is true.
+1. Usually tests for one assumption (normality) are sensitive to whether the other assumptions are true (constant variance).  That is, you often can't have a valid test for normality if variance is not constant. [reference?]
+
+## Assessing normality with qqplot
+
+Most people seem to advocate assessing normality using something called a [**normal qqplot**](https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot), which stands for **normal quantile-quantile plot** (usually just called a **qqplot**).  
+
+The ggfotify augments ggplot2 and allows you to use the autoplot command to generate diagnostics plots.  Setting which = 2 gives you a qqnormal plot.
+
+There's some math behind how it works, but basically you want to see the datapoints of the plot fall along the 1:1 line.
+
+For our original model, the points drift off of the 1:1 line a lot, which isn't good.
+```{r}
+autoplot(lm.mass, which = 2)
+```
 
 
-https://ademos.people.uic.edu/Chapter12.html#2_regression_assumptions
-https://ademos.people.uic.edu/Chapter12.html#32_testing_for_outliers:_outliertest()
+Let's look at the logit model
+```{r}
+autoplot(lm.mass.logit.fat, which = 2)
+```
 
-car::outlierTest()
-car::ncvTest()
-car::crPlots()
+Not perfect, but overall better.
+
+Note that the qqplot can potentially give you more information than a test for normality.  As we saw above, the log and logit transform had high p-values for the Shapiro-wilkes test, but the qqplot indicates some lack of normality.  When you have a lot of data that is truly normal, the dots will all fall almost exactly on the line.  
+
+This code is a bit dense but it shows what 100 data points with completely normal x and y variables look like.  Trying running the code several times to see how far the points stray from the 1:1 line.
+
+```{r}
+s <- matrix(c(10,3,3,2),2,2)
+norm.dat <- mvrnorm(n = 100, rep(0, 2), s)
+norm.dat <- data.frame(norm.dat)
+names(norm.dat) <- c("y","x")
+lm.norm <- lm(y ~ x, data = norm.dat)
+autoplot(lm.norm, which = 2)
+
+```
 
 
-Pena & Slate.  2006.  [Global Validation of Linear Model Assumptions.  Am Stat.](https://doi.org/10.1198/016214505000000637)
-
-gvlma::gvlma
 
 
+## Homoskedasticity
 
+If the assumption of constant variance is violated you might be able to see it in the raw data because points on one of the graph will be close to the regression line fan out on both sides on the other.  This needs to be formally assessed by plotting residuals.  
+
+One way to do this is to plot the residuals of the model against the predictions from the model (what R calls fitted values).  We can get the fitted values with the fitted command
+
+```{r}
+milk_primates$f.i <- fitted(lm.mass)
+milk_primates$r.i <- resid(lm.mass)
+```
+
+Then plot them.
+```{r}
+ggscatter(y = "r.i", x = "f.i", 
+     data  = milk_primates) +
+  geom_hline(yintercept = 0, 
+             col = "red")
+```
+
+If the data points fan out away from a horizontal line at zero, you have a problem.
+
+The autoplot can generate this plot automatically
+```{r}
+autoplot(lm.mass, which = 1)
+```
+
+
+Some people like to take the absolute value of the residuals for this type of plot and add a trend line
+
+```{r}
+milk_primates$r.i.abs <- abs(milk_primates$r.i)
+
+ggscatter(y = "r.i", x = "f.i", 
+     data  = milk_primates,
+     add = "loess") +
+  geom_hline(yintercept = 0, 
+             col = "red")
+
+```
+
+
+A similar plot is the scale-location plot.  I am not sure how this information is different or complementary to the previous plots.  A trend in the residuals is not good, though.
+```{r}
+autoplot(lm.mass, which = 3)
+```
+
+### Plotting multiple residuals plot
+
+We can plot multiple plots at the same time by passing which = a vector of multiple numbers. 
+
+Let's look at our logit transformed model
+```{r}
+autoplot(lm.mass.logit.fat, 
+         which = c(1,2,3))
+```
+
+Go back and forth between the lm.mass and lm.mass.logit.fat models to look for differences.  For lm.mass, the residuals vs. fitted plot has a fan shape, and the scale-location plot trends upwards.  In contrast, lm.mass.logit.fat has a residual vs. fitted plot with a triangle shape which actually isn't so bad; a long diamond or oval shape is usually what we are shooting for, and the ends are always points because there is less data there.  
+
+The lm.mass.logit.fat scale-location plot looks a bit funny, with an initial upward trend.  Most of the line is flat, though, which is good.
+
+
+## Influence, Outliers & Leverage
+
+Now let's turn to thinking about how unusual data points might impact our regression coefficients.
+
+### Leverage
+
+High [**leverage**](https://en.wikipedia.org/wiki/Leverage_(statistics)) points are those with x values that are much higher than other data point.  In our analysis, if we added a whale to our primate data, it would have a mass much much higher than all the primates.  This would be a high leverage point that would necessarily pull the regression line towards it.
+
+High leverage data point aren't necessarily outliers; they simply are data points for which there is a gap between them and the rest of your data. 
+
+The primate data we have been working with actually initially had a very high leverage point.  We've mostly been working with the data on the log-transformed scale for the x axis (log(female mass))  If we plot the data on the original scale we get this:
+```{r}
+ggscatter(y = "fat", 
+          x = "mass.fem", 
+          data = milk_primates,
+          add = "reg")
+```
+
+The largest primate is almost 3 times bigger than the next largest.  Notice how the regression lines passes near the  point on the far right.  High leverage points do this as part of the process of minimizing the sum of squares.  This can cause distortion.
+
+#### Measuring leverage
+
+For comparison, let's fit a model where mass isn't transformed.
+
+```{r}
+lm.mass.no.log <- lm(fat ~ mass.fem, data = milk_primates)
+```
+
+
+Leverage is quantified by something called the [**hat matrix**](https://en.wikipedia.org/wiki/Projection_matrix).  If you take a stats class that uses matrix algebra you'll probably learn how to do the calculations for this.  We'll just use the hatvalues() function.
+
+We can make a histogram of the hat values and see that our largest primate has a hat value much larger than all the others.
+```{r, eval = F}
+hist(hatvalues(lm.mass.no.log))
+```
+
+```{r, echo = F}
+hist(hatvalues(lm.mass.no.log),
+     main = "Histogram of hat values")
+```
+
+
+The magic of [data transformation](https://en.wikipedia.org/wiki/Data_transformation_(statistics)), however, re-scales things and makes this far right point no longer have such high leverage. Let's take a look at our model where female body mass was transformed:
+```{r}
+hist(hatvalues(lm.mass))
+```
+
+We now have a much smoother distribution of hat values; transformation has reduced the leverage of the largest species.
+
+Note that the leverage values depend only on the predictors.  If we compare the leverage values for our model with log transformed and logit transformed fat there is no difference
+```{r}
+summary(hatvalues(lm.mass.log.fat))
+summary(hatvalues(lm.mass.logit.fat))
+```
+
+
+
+
+### Residuals vs. leverage
+
+A common plot is residuals versus leverage.  A high residual and high leverage can be problematic.  In these graphs.
+
+We could make this plot by hand
+```{r}
+plot(resid(lm.mass.logit.fat) ~ hatvalues(lm.mass.logit.fat))
+abline(h = 0, col = 2)
+```
+
+
+Actually, the residuals are technically a thing called "standardized residuals", we we have to use (in this case the difference is minor).
+```{r, eval = F}
+plot(rstandard(lm.mass.logit.fat) ~ hatvalues(lm.mass.logit.fat))
+abline(h = 0, col = 2)
+```
+
+
+A cleaner look is achieved with plot() on the model and 'which = 5'.  Let's look at the difference between our new model with mass and the original log(mass) 
+
+```{r, eval = F}
+plot(lm.mass.no.log, which = 5)
+plot(lm.mass, which = 5)
+```
+
+
+```{r, echo = F}
+par(mfrow = c(1,2))
+plot(lm.mass.no.log, which = 5)
+plot(lm.mass, which = 5)
+par(mfrow = c(1,1))
+```
+
+
+You can make these plots with autoplot() and which = 5.  However, base R includes the red liens for Cook's distance, which is discussed below.  A data point that falls outside the red isoclines for 1.0 is considered "influential" and potentially problematic.  See below for more on Cook's distance and influence.
+
+Unlike the other plots, I don't think (CHECK!) that the pattern of the points matters.  The red line plotted is just to draw your eye to extreme points.  See https://data.library.virginia.edu/diagnostic-plots/
+
+### High leverage vs. being an outlier
+
+It needs to be pointed out that high leverage points are not outliers.  High leverage points simply have an x-value that is far from the rest of the data it is grouped with.  For example, if we took data from the World Bank plotted mean household income versus number of automobiles for all countries of the world, South Africa probably wouldn't look special.  If we just plotted countries from sub-Saharan Africa, however, South Africa would be unique.
+
+
+### Outliers
+
+[**Outliers**](https://en.wikipedia.org/wiki/Outlier) are data points which have a y value which is extreme *given* their x value.  So, if you knew their x value and had to guess their y value, you'd be very wrong.  In our data, if we have a large primate with with 30% milk fat, that would be an outlier, since large primates usually have milk fat <10%.  Outliers might or might not impact regression results.  That is, outliers might or might not have high influence (above) or leverage (below).  Transformation of the y variable can sometimes reduce the impact of outliers.  
+
+
+### Aside: is transformation cheating?
+
+> "Some people ask whether use of a transformation is cheating" Bland & Altman 1996 [BMJ](https://www.bmj.com/content/312/7033/770).
+
+Transformation can seem like magic at best and cheating at worst.  It an be hard to wrap your mind around what's going on, and I am honestly not very good at explaining it.
+
+
+### Are outliers bad?
+
+> "The removal of outliers to acquire a significant result is a questionable research practice that appears to be commonly used in psychology." (Bakker and Wicherts 2014)
+
+Outliers sometimes are treated suspiciously, like they are mistakes that need to be purged.  There are [statistical tests](https://cran.r-project.org/web/packages/outliers/) for outliers, and sometimes these are used to justify removing suspect data points.  They might be a data recording error or data entry mistake, or they might just be exceptional individuals or observations which you currently don't have a conceptual model or statistical predictors to account for.  In biology its generally considered bad practice to remove outliers unless they can be shown to be due to outright experimental error or data handling mistakes. 
+
+Psychologists seem to talk about outlier removal a lot more.  When working with human subjects it might make sense to remove outliers if you have evidence that they weren't following directions.  For example, if you are a psychologist studying reaction times and you have an individual that was really really slow, perhaps they weren't really following directions or were distracted and so aren't a providing valid data on what you.  However, as quote above implies, this practice can be abused.
+
+
+Leys et al. 2013.  Detecting outliers: Do not use standard deviation around the mean, use absolute deviation around the median.  [Journal of Experimental Social Psychology.](https://www.sciencedirect.com/science/article/pii/S0022103113000668)
+
+Bakker and Wicherts 2014.  Outlier Removal and the Relation with Reporting Errors and Quality of Psychological Research.  [PLoS ONE.](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0103360)  
+
+
+### Influence
+
+When a data point has a strong impact on regression results, its is called an [**influential observation**](https://en.wikipedia.org/wiki/Influential_observation).  High leverage points usually (I think...) have high influence; however, highly influential points often do not have high leverage.  That is because high leverage points always occur at the extreme ends of the x axis (uniquely low or  high values of x variables) while highly influential points can occur anywhere in the data set.
+
+#### Cook's distance
+
+[**Cook's distance**](https://en.wikipedia.org/wiki/Cook%27s_distance) is a common measure of **influence**.  You can think of Cook's distance as gauging what the impact of iteratively dropping each data point from the model and re-fitting the regression to the new data set.  If a data point is dropped from the model and this changes the regression output a lot, then it will have a large Cook's distance.
+
+#### Cook's distance diagnostics
+
+You can get a sense for which data points have large cooks distance using autoplot with 'which = 4', which just plots the Cook's distance versus the order they occur in the dataset.
+```{r}
+autoplot(lm.mass.no.log, which = 4)
+```
+
+An important diagnostic plot is to plot the leverage value against Cook's distance.
+```{r}
+autoplot(lm.mass, which = 6)
+```
+
+As noted above, a Cook's distance >1 is considered potentially problematic, though there is disagreement over this and more sophisticated ways to benchmark your dat.  
+
+
+
+
+
+
+## Resources
+
+### Websites
 
 ["Assumptions of Linear Regression"](http://r-statistics.co/Assumptions-of-Linear-Regression.html)
 
-
-
 [Quick-R: Regression Diagnostics](https://www.statmethods.net/stats/rdiagnostics.html)
 
+https://ademos.people.uic.edu/Chapter12.html#2_regression_assumptions
+
+https://ademos.people.uic.edu/Chapter12.html#32_testing_for_outliers:_outliertest()
+
+### Wikipedia
+
+https://en.wikipedia.org/wiki/Regression_validation
+
+https://en.wikipedia.org/wiki/Regression_diagnostic
+
+### R packages
+
+#### car package (Compansion to applied regression)
+
+Misc functions for formal tests of assumptions.  (car is a great package, but most people prefer graphical methods to format tests )
+
+* car::outlierTest()
+* car::ncvTest()
+* car::crPlots()
 
 
-Altman & Krzywinski.  2016.  [Regression diagnostics.  Nature Methods.](https://www.nature.com/articles/nmeth.3854)
 
+#### gvlam package
+
+Pena & Slate.  2006.  [Global Validation of Linear Model Assumptions.  Am Stat. ](https://doi.org/10.1198/016214505000000637)
+
+
+
+### Nature methods tutorials
+
+Altman & Krzywinski.  2015.  Points of Significance: Association, correlation and causation. [Nature Methods](https://www.nature.com/nmeth/journal/v12/n10/abs/nmeth.3587.html)
+
+Krzywinski & Altman.  2015.  Points of Significance: Multiple linear regression.  [Nature Methods.](https://www.nature.com/articles/nmeth.3665)
+
+Altman & Krzywinski.  2016. Points of Significance: Analyzing outliers: influential or nuisance? [Nature Methods.]
+
+Altman & Krzywinski.  2016.  Points of Significance: Regression diagnostics.  [Nature Methods.](https://www.nature.com/articles/nmeth.3854)
+
+
+### Transformation
+
+Bland & Altman 1996.  Statistics Notes: Transforming data. [BMJ](https://www.bmj.com/content/312/7033/770)
+
+Bland & ALtman 1996.  Statistics notes. Logarithms.  [MBJ](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2350526/)
+
+Bland & ALtman.  1996.  Statistics notes: Transformations, means, and confidence intervals. [BMJ](https://www.bmj.com/content/312/7038/1079.full)
+
+
+Limpert et al. 2001. Log-normal Distributions across the Sciences: Keys and Clues.  BioScience.
+
+### General linear models
 
 Zhang 2016.  [Residuals and regression diagnostics: focusing on logistic regression.  Annals of Translational Medicine.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4885900/)
+
+
+### Outlier detection tests
+
+Leys et al. 2013.  Detecting outliers: Do not use standard deviation around the mean, use absolute deviation around the median.  [Journal of Experimental Social Psychology.](https://www.sciencedirect.com/science/article/pii/S0022103113000668)
+
+Bakker and Wicherts 2014.  Outlier Removal and the Relation with Reporting Errors and Quality of Psychological Research.  [PLoS ONE.](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0103360)  

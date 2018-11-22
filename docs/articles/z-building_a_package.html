@@ -84,7 +84,7 @@
       <a href="../articles/f3-linear_reg_model_fit.html">f3) Linear regression as model fitting</a>
     </li>
     <li>
-      <a href="../articles/g-linear_reg_diagnostics.html">g) Regression diagnostics</a>
+      <a href="../articles/g-linear_reg_diagnostics.html">g) Regression diagnostics &amp; Residual Analysis</a>
     </li>
     <li>
       <a href="../articles/z-building_a_package.html">z) Creating this package</a>
@@ -112,7 +112,7 @@
 </ol></h1>
                         <h4 class="author">Nathan Brouwer</h4>
             
-            <h4 class="date">2018-11-19</h4>
+            <h4 class="date">2018-11-21</h4>
       
       
       <div class="hidden name"><code>z-building_a_package.Rmd</code></div>
@@ -239,9 +239,15 @@
 
 <span class="kw">use_data</span>(milk_fat)
 <span class="kw">use_r</span>(<span class="st">"milk_fat"</span>)</code></pre></div>
+</div>
+</div>
+</div>
+<div id="license" class="section level2">
+<h2 class="hasAnchor">
+<a href="#license" class="anchor"></a>License</h2>
+<p><a href="http://kbroman.org/pkg_primer/pages/licenses.html" class="uri">http://kbroman.org/pkg_primer/pages/licenses.html</a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">usethis<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/usethis/topics/licenses">use_mit_license</a></span>(<span class="dt">name =</span> <span class="st">"Nathan Brouwer"</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#use_data_raw()</span></code></pre></div>
-</div>
-</div>
 <div id="spell-check" class="section level3">
 <h3 class="hasAnchor">
 <a href="#spell-check" class="anchor"></a>Spell check</h3>
@@ -262,13 +268,34 @@
 <a href="#devtools-functions" class="anchor"></a>devtools functions</h2>
 <p>“Builds package vignettes using the same algorithm that R CMD build does”</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/build_vignettes">build_vignettes</a></span>()</code></pre></div>
-<p>“This uses a fairly rudimentary algorithm where any files in ‘inst/doc’ with a name that exists in ‘vignettes’ are removed.” clean_vignettes()</p>
+<p>“This uses a fairly rudimentary algorithm where any files in ‘inst/doc’ with a name that exists in ‘vignettes’ are removed.”</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clean_vignettes</span>() </code></pre></div>
 </div>
 <div id="pckgdown-functions" class="section level2">
 <h2 class="hasAnchor">
 <a href="#pckgdown-functions" class="anchor"></a>pckgdown functions</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pkgdown<span class="op">::</span><span class="kw"><a href="https://pkgdown.r-lib.org/reference/build_site.html">build_site</a></span>()</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">check_failures</code></pre></div>
+<p>check_failures</p>
+</div>
+<div id="rcmd-exe" class="section level2">
+<h2 class="hasAnchor">
+<a href="#rcmd-exe" class="anchor"></a>Rcmd.exe</h2>
+<p>“Clean and rebuild” ==&gt; Rcmd.exe INSTALL –preclean –no-multiarch –with-keep.source mammalsmilk</p>
+<p>“Install restart” ==&gt; Rcmd.exe INSTALL –no-multiarch –with-keep.source mammalsmilk</p>
+</div>
+<div id="devtools-function" class="section level2">
+<h2 class="hasAnchor">
+<a href="#devtools-function" class="anchor"></a>Devtools function</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## "Document"
+devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/document">document</a></span>(<span class="dt">roclets=</span><span class="kw">c</span>(<span class="st">'rd'</span>, <span class="st">'collate'</span>, <span class="st">'namespace'</span>))
+
+## "Load all"
+devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/load_all">load_all</a></span>(<span class="st">"."</span>)
+
+## devtools::build_vignettes()
+
+## "Check"
+devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/check">check</a></span>()</code></pre></div>
 </div>
   </div>
 
@@ -282,8 +309,11 @@
       <li><a href="#create-repository">Create repository</a></li>
       <li><a href="#set-up-package-with-usethis">Set up package with usethis</a></li>
       <li><a href="#set-up-data">Set up data</a></li>
+      <li><a href="#license">License</a></li>
       <li><a href="#devtools-functions">devtools functions</a></li>
       <li><a href="#pckgdown-functions">pckgdown functions</a></li>
+      <li><a href="#rcmd-exe">Rcmd.exe</a></li>
+      <li><a href="#devtools-function">Devtools function</a></li>
       </ul>
 </div>
       </div>
