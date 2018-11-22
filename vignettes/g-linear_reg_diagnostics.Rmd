@@ -626,15 +626,41 @@ As noted above, a Cook's distance >1 is considered potentially problematic, thou
 
 ## Resources
 
-### Websites
+---
+title: "Untitled"
+author: "Nathan Brouwer"
+date: "November 21, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Resources
+
+### Regression Assumptions
 
 ["Assumptions of Linear Regression"](http://r-statistics.co/Assumptions-of-Linear-Regression.html)
 
-[Quick-R: Regression Diagnostics](https://www.statmethods.net/stats/rdiagnostics.html)
-
 https://ademos.people.uic.edu/Chapter12.html#2_regression_assumptions
 
+### Regression Diagnostics
+
+Hollard.  2011.  "Regression diagnostic plots."  [Data Analysis in the Geosciences (GEOL 8370)](http://strata.uga.edu/8370/rtips/regressionPlots.html)
+
+* A good walkthrough of diagnostics using simulation to show how diagnostics plots vary under different conditions.
+
+Chatterjee et al.  1992.  A review of regression diagnostics for behavioral research.  [Applied Psychological Measurement.](https://doi.org/10.1177/014662169201600301)
+
+* In-depth but non-mathy coverage of all major diagnostics tools.
+
+
+[Quick-R: Regression Diagnostics](https://www.statmethods.net/stats/rdiagnostics.html)
+
 https://ademos.people.uic.edu/Chapter12.html#32_testing_for_outliers:_outliertest()
+
+
 
 ### Wikipedia
 
@@ -659,8 +685,26 @@ Misc functions for formal tests of assumptions.  (car is a great package, but mo
 Pena & Slate.  2006.  [Global Validation of Linear Model Assumptions.  Am Stat. ](https://doi.org/10.1198/016214505000000637)
 
 
+### Spatial autocorrelation
+
+Valcul & Kempenaers.  2010.   Spatial autocorrelation: an overlooked concept in behavioral ecology.  [Behavioral Ecology](https://doi.org/10.1093/beheco/arq107)
+
+Legendre.  1993. Spatial autocorrelation: trouble or new paradigm?  [Ecology.](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1939924)
+
+Noble et al.  2017.  Nonindependence and sensitivity analyses in ecological and evolutionary meta-analyses.  [Molecular Ecology](https://onlinelibrary.wiley.com/doi/full/10.1111/mec.14031)
+
+* While this is about meta-analysis, it has great info on issues of non-independence.  See Figure 4 especially.
+
+
+
+### Normality
+
+Curran-Everett.  2017.  Explorations in statistics: the assumption of normality.  [Advances in physiology education.](https://www.physiology.org/doi/full/10.1152/advan.00064.2017)
+
 
 ### Nature methods tutorials
+
+Generally excellent short tutorials on key topics.
 
 Altman & Krzywinski.  2015.  Points of Significance: Association, correlation and causation. [Nature Methods](https://www.nature.com/nmeth/journal/v12/n10/abs/nmeth.3587.html)
 
@@ -668,27 +712,73 @@ Krzywinski & Altman.  2015.  Points of Significance: Multiple linear regression.
 
 Altman & Krzywinski.  2016. Points of Significance: Analyzing outliers: influential or nuisance? [Nature Methods.]
 
-Altman & Krzywinski.  2016.  Points of Significance: Regression diagnostics.  [Nature Methods.](https://www.nature.com/articles/nmeth.3854)
+
+### Logs
+
+"Demystying the Natural Logarith (ln)" https://betterexplained.com/articles/demystifying-the-natural-logarithm-ln/
+
+* Great general introduction to the basic math.
+
+**Bland & ALtman**. 1996.  Statistics notes. Logarithms.  [MBJ](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2350526/)
+
+**Altman & Krzywinski**.  2016.  Points of Significance: Regression diagnostics.  [Nature Methods.](https://www.nature.com/articles/nmeth.3854)
 
 
 ### Transformation
+
+**Curran-Everett.  2018.  Explorations in statistics: the log transformation.  [Advances in Physiology Education](https://doi.org/10.1152/advan.00018.2018)
+
+* A deep exploration of the log transformation
 
 Bland & Altman 1996.  Statistics Notes: Transforming data. [BMJ](https://www.bmj.com/content/312/7033/770)
 
 Bland & ALtman 1996.  Statistics notes. Logarithms.  [MBJ](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2350526/)
 
+Keene.  1995.  The log transformation is special. [Statistics in Medicine.](https://doi.org/10.1002/sim.4780140810 )
+
+* Arguement for why log transformation should be done  a priori for many analytical situations.
+
+
+
+### Transformation and back transformations
+
 Bland & ALtman.  1996.  Statistics notes: Transformations, means, and confidence intervals. [BMJ](https://www.bmj.com/content/312/7038/1079.full)
 
+* Short introduce of the topic.  "carry out all calculations on the transformed scale and transform back once we have calculated the confidence interval. This works for the sample mean and its confidence interval. Things become more complicated if we look at the difference between two means."
+
+
+
+Manning.  1998.  The logged dependent variable, heteroscedasticity, and the retransformation problem.  [Journal of Health Economics](https://doi.org/10.1016/S0167-6296(98)00025-3)
+
+### Heteroskedasticity
+
+Cleasby & Nakagaw  2011.  Neglected biological patterns in the residuals.  [Behavioral Ecology & Sociobiology](https://link.springer.com/article/10.1007/s00265-011-1254-7)
+
+### Clustering / Grouping / Nesting
+
+Schielzeth & Nakagawa.  2013.  Nested by design: model fitting and interpretation in a mixed model era.  [Methods in Ecology and Evolution.](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/j.2041-210x.2012.00251.x)
+
+Chaves 2010.  An entomologist guide to demystify pseudoreplication: data analysis of field studies with design constraints. [Journal of medical entomology](https://academic.oup.com/jme/article/47/3/291/889033)
+
+Wagner et al.  2006.  Accounting for multilevel data structures in fisheries data using mixed models. [Fisheries.](https://www.tandfonline.com/doi/abs/10.1577/1548-8446(2006)31%5B180%3AAFMDSI%5D2.0.CO%3B2)
+
+
+### Log-normal distribution
 
 Limpert et al. 2001. Log-normal Distributions across the Sciences: Keys and Clues.  BioScience.
 
-### General linear models
 
-Zhang 2016.  [Residuals and regression diagnostics: focusing on logistic regression.  Annals of Translational Medicine.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4885900/)
 
+### Kurtosis
+
+Westfall 2014: Kurtosis as Peakedness, 1905–2014. R.I.P.  [Am. Stat.](https://www.tandfonline.com/doi/abs/10.1080/00031305.2014.917055)
 
 ### Outlier detection tests
 
 Leys et al. 2013.  Detecting outliers: Do not use standard deviation around the mean, use absolute deviation around the median.  [Journal of Experimental Social Psychology.](https://www.sciencedirect.com/science/article/pii/S0022103113000668)
 
 Bakker and Wicherts 2014.  Outlier Removal and the Relation with Reporting Errors and Quality of Psychological Research.  [PLoS ONE.](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0103360)  
+
+### General linear model diagnostics
+
+Zhang 2016.  [Residuals and regression diagnostics: focusing on logistic regression.  Annals of Translational Medicine.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4885900/)

@@ -1,0 +1,26 @@
+
+Boldina & Beninger.  2016.  Strengthening statistical usage in marine ecology: Linear regression.  [Journal of Experimental Marine Biology & Ecology](https://www.sciencedirect.com/science/article/pii/S002209811530023X)
+
+Marril.  2004.  Advanced Statistics: Linear Regression, Part I: Simple Linear Regression.  [Emergency Medicine](https://onlinelibrary.wiley.com/doi/abs/10.1197/j.aem.2003.09.005)
+
+
+Marril 2008.  Advanced Statistics: Linear Regression, Part II: Multiple Linear Regression.  [Emergency Medicine](https://onlinelibrary.wiley.com/doi/abs/10.1197/j.aem.2003.09.006)
+Schneider et al 2010.  Linear regression analysis: part 14 of a series on evaluation of scientific publications.  [Deutsches Ärzteblatt.](https://www.aerzteblatt.de/int/archive/article?id=79009)
+
+
+
+
+### Misc
+
+GINGERICH.  2000.  Arithmetic or Geometric Normality of Biological Variation: an Empirical Test of Theory.  [Journal of Theoretical Biology](https://www.sciencedirect.com/science/article/pii/S0022519300920083)
+
+Flewelling and Pienaar.  1981.  Multiplicative Regression with Lognormal Errors.  [Forest Science.](https://academic.oup.com/forestscience/article-abstract/27/2/281/4656582)
+
+Beauchamp & Olson.  1973.  Corrections for Bias in Regression Estimates After Logarithmic Transformation.  [Ecology.](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934208)
+
+Hayes & Shonkwiler.  2006.  Allometry, antilog transformations, and the perils of prediction on the original scale.  [Physiological and Biochemical Zoology.](https://www.journals.uchicago.edu/doi/abs/10.1086/502814)
+
+
+Laws & Atrchie.  1981.  Appropriate use of regression analysis in marine biology.  [Marine Biology](https://link.springer.com/article/10.1007/BF00397062)
+
+McArdle.  2003.  Lines, models, and errors: regression in the field.  [Limnology and Oceanography](https://aslopubs.onlinelibrary.wiley.com/doi/abs/10.4319/lo.2003.48.3.1363) 
