@@ -61,7 +61,7 @@ dat2$rel.lact.log10 <- log10(dat2$rel.lactation)
 
 * No transformation of the predictor  (x) variable.
 * Note the triangle shape of the data.  
-    * This forebodes heterogenous variance.
+    * This forebodes heterogeneous variance.
 * I think this is probably better than a log transformation of the x axis
 
 ```{r}
@@ -90,7 +90,7 @@ qplot(y = fat.log10,
 
 ## Combine Diet categories: pool herbivores and omnivores
 
-* In the model selection tutorial we saw that herbivores and omnivores have almost idential slopes.  
+* In the model selection tutorial we saw that herbivores and omnivores have almost identical slopes.  
 * For the sake of this next exercise let's combine these two factor levels so we have just 2 diet types
     + carnivores
     + other = herbivore + omnivore
@@ -103,7 +103,7 @@ diet2 <- dat2$diet
 
 ```
 
-Look at the column with sumamry()
+Look at the column with summary()
 ```{r}
 summary(diet2)
 ```
@@ -126,9 +126,9 @@ summary(diet2)
 ```
 
 
-What happend?  
+What happened?  
 
-* The ifelse() command coverted the data from a factor to character data.  
+* The ifelse() command converted the data from a factor to character data.  
 * How R handles factors and character data and their conversion will, sooner or later, ruin your day.  Sorry, its just gonna happen.
 * SOLUTION: email me AS SOON AS YOU START HAVING PROBLEMS
 
@@ -168,7 +168,7 @@ qplot(y = fat.log10,
 
 * "+ geom_smooth()" w/ nothing inside
 
-Default is for loess smoothes
+Default is for loess smooths
 ```{r}
 qplot(y = fat.log10,
       x = rel.lactation,
@@ -290,7 +290,7 @@ qplot(y = fat.log10,
 ## Model w/ a Single slope
 
 * 1 Intercept
-* Slope based on continous predictor, rel.lactation
+* Slope based on continuous predictor, rel.lactation
 * (slope = parameter = coefficient)
 
 
@@ -329,9 +329,9 @@ arrows(y0= coef(m.lactation)[1],
 
 ## Model with Two intercepts
 
-* 1 Intercept for carnivorwes
+* 1 Intercept for carnivores
 * 1 intercept for herbivores+omni
-* No slope; models 2 falt lines
+* No slope; models 2 flat lines
 
 ```{r}
 m.diet2 <- lm(fat.log10 ~ diet2, data = dat2)
@@ -413,7 +413,7 @@ coef(m.diet2)[1] + coef(m.diet2)[2]
 ## Model w/ Two parrallel slopes
 
 * This is an ANCOVA-type model
-* (This term - analysis of covariance - is only really useful is you were taught expliclity about ANCOVA)
+* (This term - analysis of covariance - is only really useful is you were taught explicitly about ANCOVA)
 
 ```{r}
 m.lact.diet <- lm(fat.log10 ~ rel.lactation + 
@@ -435,7 +435,7 @@ plot.ANCOVA(m.lact.diet)
 
 ## Model Two non-parralel slopes
 
-* Models with an interation term have lines with slopes that are not parralle
+* Models with an interaction term have lines with slopes that are not parallel
 
 ### Fully written out interaction model
 ```{r}
@@ -450,7 +450,7 @@ coef(m.lact.X.diet)
 
 ### Equivalent syntax for interaction  model
 
-* R expands out the terms invovled in the interaction
+* R expands out the terms involved in the interaction
 * we don't have to include any "+"
 ```{r}
 m.lact.X.diet <- lm(fat.log10 ~ rel.lactation*diet2, 
@@ -568,7 +568,7 @@ anova(m.diet2,
 ```
 
 **QUESTION**
-HOw do these results compare to the AIC results
+How do these results compare to the AIC results
 
 
 
@@ -599,7 +599,7 @@ HOw do these results compare to the AIC results
 
 **ANSWER**
 
-* m.lact.X.diet vs m.lact.diet (interaction vs. additive) had dAIC of 0.3 and p = 0.12.  THe high -- but not really really high -- matches with the conclusion that the itneraction is not well supported, but not obviously bad
+* m.lact.X.diet vs m.lact.diet (interaction vs. additive) had dAIC of 0.3 and p = 0.12.  The high -- but not really really high -- matches with the conclusion that the interaction is not well supported, but not obviously bad
 * m.diet2 vs. m.lact.diet (additive vs. diet only) had dAIC 5.6 and p = 0.006.  Adding lactation to the model improve the model by a good margin (dAIC > 2, p << 0.05)
 
 
@@ -671,7 +671,7 @@ plot(m.lact.diet)
 Is there any evidence of
 
 * Problems with homogeneity of variance? What graph indicates this?
-* NOrmality of the data?  What graph indicates that?
+* Normality of the data?  What graph indicates that?
 * Influential points?
 
 
@@ -718,7 +718,7 @@ Is there any evidence of
 
 * The residual vs. fitted plot is ugly; on the left-hand side the points fall way below where a horizontal line would be.
 * There is no plot for the "normality of the data"; trick question
-* THe qq normal plot tells you about the normality of the residul.  On the left-hand size its look a little bad; It would be interesting to know if the logit transformation improves this at all.
+* The qq normal plot tells you about the normality of the residual.  On the left-hand size its look a little bad; It would be interesting to know if the logit transformation improves this at all.
 * There are no outliers
 
 
@@ -758,7 +758,7 @@ outliers <- c(86,107,108)
 
 
 
-Plot scatterplot w/ modle and label the points with large resiudals
+Plot scatterplot w/ model and label the points with large residuals
 
 ```{r}
 par(mfrow = c(1,1),
@@ -776,7 +776,7 @@ labels = outliers,adj = 1)
 
 ## Compare data to residual plot
 
-Plot scatter plot with regression lines vs. residvs. fitted plot
+Plot scatter plot with regression lines vs. resid vs. fitted. fitted plot
 ```{r}
 
 #set par to 1 x 2
@@ -843,11 +843,11 @@ anova(m.diet2,
 
 # Call R2, F by hand
 
-* R2 reprents the amount of variation that a model explains
+* R2 represents the amount of variation that a model explains
 * Its a ratio of the sum of squares of the model in equation over the sum of squares of null model
 * R2 = SS/RSS.null
-* "SS" is the sume of square from the focal model
-    + Its in the column "SUm of Sq" in the ANOVA table
+* "SS" is the sum of square from the focal model
+    + Its in the column "Sum of Sq" in the ANOVA table
 * RSS.null represents the total variability in the response variable
 
 R2 from summary command
@@ -898,7 +898,7 @@ If we add up the rows related to our parameters, we get the total SS for our ful
 ```
 
 
-If add up everything in the SUm of sq columns, we get the total sum of squares, aka the sum of squares from the null model
+If add up everything in the Sum of sq columns, we get the total sum of squares, aka the sum of squares from the null model
 ```{r}
 #Model terms + residuals
 15.2258+0.2886+8.6593+2.7321

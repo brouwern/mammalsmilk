@@ -29,13 +29,13 @@ milk2$fat.logit <- logit(milk2$fat.percent/100)
 
 # Adding Categorial Variables
 
-* The most basic regression has a continous y variable and a continuous x variable
-* That is, continous response and continous predictor
-* You can have multiple continous predictors, resulting in multiple regression
+* The most basic regression has a continuous y variable and a continuous x variable
+* That is, continuous response and continuous predictor
+* You can have multiple continuous predictors, resulting in multiple regression
 * You can also add categorical predictors
 * Also known as factors
 * Fitting a regression w/ categorical predictors is kind of like fitting 2 seperate regression models, one to each subset of data
-* (However, fitting a regression w/ 2+ continous predictors is NOT like fitting 2 sep. regression1)
+* (However, fitting a regression w/ 2+ continuous predictors is NOT like fitting 2 seperate. regression1)
 
 **Milk data's dategorical/factor/grouping variables**
 
@@ -367,7 +367,7 @@ text(labels = round(offset.,3),x = -0.5,y = -temp,cex = 1.25
 ## Interactions:
 
 * An interaction is when one variable changes the values of another
-* For a continous x categorical interaction, the slope of the continuous variable depends on the value of the categorical var.
+* For a continuous x categorical interaction, the slope of the continuous variable depends on the value of the categorical var.
 
 
 

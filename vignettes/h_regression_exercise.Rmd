@@ -1,5 +1,5 @@
 ---
-title: 'HW 4: Regression Case Study Tutorial 4: Regression with one variable'
+title: "Q) Regression exercise 1: transformations & diagnostics"
 author: "Nathan Brouwer | brouwern@gmail.com | @lowbrowR"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -13,36 +13,67 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Load Data
 
+## Preliminaires 
+
+### Load packages
+
+### Load data
 ```{r}
-setwd("C:/Users/Jackie/Desktop")
-dat2 <- read.csv("milk_subset.csv")
+milk_fat <- data("milk_fat")
 ```
 
 
 
-# Regression of fat ~ body size
+library(ggplot2)
 
-* The author's of the milk paper indicate that there are typically correlations between the size of mammal and fat content.  
+fat
+mass
 
-They note:
-"W/in particular phylogenetic groups, there are significant negative relationships between body mass & ... fat ... (Merchant et al. 1989; Derrickson et al 1996; Hinde & Milligan 2011). Spp. w/ small body masses are expected to produce more concentrated & energetically dense milk b/c they have higher mass-specific metabolic demands & reduced digestive capacity due to smaller GI tracts (Blaxter 1961). Thus, small-bodied species should be incapable of ingesting greater quantities of milk to meet metabolic & nutritional demands & should instead require more concentrated & energy dense milk (Blaxter 1961)."
+log10
+coef
+predict
+
+range
+data.frame
+
+Questions
+* Write the regression equation for the equation of the log10-log10 regression line line
+
+
+Which plot provides information about...
+* ... homogeneity of variance?
+  * ... normality of residuals?
+  * ... outliers/influential points?
+  
+  **ANSWERS**
+  
+  * Residual vs. fit plot: Homogeneity of variance (homoscedasticity)
+* Normal Q-Q plot: Normality of residual
+* Scale-Location plot: ...
+* Residuals vs. Leverage: outliers/influential points
+
+## Model 
+
+###  Regression: fat ~ body size
+
+The author's of the milk paper indicate that there are typically correlations between the size of mammal and fat content.  They note:
+
+> "Within particular phylogenetic groups, there are significant negative relationships between body mass & ... fat ... (Merchant et al. 1989; Derrickson et al 1996; Hinde & Milligan 2011). Species with small body masses are expected to produce more concentrated and energetically dense milk because they have higher mass-specific metabolic demands and reduced digestive capacity due to smaller GI tracts (Blaxter 1961). Thus, small-bodied species should be incapable of ingesting greater quantities of milk to meet metabolic and nutritional demands & should instead require more concentrated and energy dense milk (Blaxter 1961)." (Skibiel et al 201x. pg yy)
 
 **References**
 
-* Derrickson 1992. Comparative reproductive strategies of altricial & precocial eutherian mammals. Functional Ecology, 6, 57-65.
-* Derrickson et al. 1996. Milk composition of two precocial, arid-dwelling rodents, Kerodon rupestris and Acomys cahirinus.
+**Derrickson 1992.** Comparative reproductive strategies of altricial & precocial eutherian mammals. Functional Ecology, 6, 57-65.
+**Derrickson et al. 1996.** Milk composition of two precocial, arid-dwelling rodents, Kerodon rupestris and Acomys cahirinus.
 Physiological Zoology, 69, 1402-1418.
 
 
 
-# Plot fat ~ body size
+### Plot fat ~ body size
 
 * Looking at the data it doesn't look like there is a consistent negative trend
 
 ```{r}
-library(ggplot2)
 qplot(y=fat.log10,
       x=mass.log10, 
       data = dat2)
@@ -50,7 +81,7 @@ qplot(y=fat.log10,
 
 
 * Indeed, across multiple taxonomic groups, The author's of the milk paper do **not** find a negative relationship between fat % and body size.
-* They used a log transformation, which I think is less than ideal.  
+* However, they used a log transformation, which I think is less than ideal because the data are percentage data.  The natural transformation for percentage data is the logit transformation (Waron & Hui 201x, Ecoloyg).  
 * We'll check if a logit transformation matters.
 
 
@@ -68,7 +99,8 @@ summary(log.log.mass)
 ```
 
 * The slope of the relationship between fat & mass is 0.022 on the log-log scale.  
-* This is in the opposite direction hypothesized. * The p value is 0.411, so the relationship is not significant.
+* This is in the opposite direction hypothesized. 
+* The p value is 0.411, so the relationship is "not significant."
 
 **QUESTION:**
 
@@ -87,7 +119,7 @@ logit.log.mass <- lm(fat.logit ~ mass.log10, data = dat2)
 summary(logit.log.mass)
 ```
 
-* The slope is even more positive, and the p-value smaller.
+* The slope is even more positive, and the p-value smaller!  So, we an a priori more appropriate transformation actually provides further evidence that the slope is not negative as predicted by theory!
 
 
 ### using coef()
@@ -101,7 +133,7 @@ coef(logit.log.mass)
 
 * The logit Transformation substantially changes the intercepts and slopes
 * This is expected because log data and logit transformation are on different scales. 
-* Because of this, these regression parameters can't be compared.
+* Because of this, these regression parameters can't be compared numerically; the models also cannoted be compared using AIC.
 
 
 Look at the p values for the two slopes
@@ -167,7 +199,7 @@ Which plot provides information about...
 
 ### Look at the residuals of the logit-log model
 
-* Let's see if my transformation makes any difference
+* Let's see if my transformation makes any difference at least to model fit (how well it fits the data and how well it meets the assumptions of regression.
 
 ```{r}
 par(mfrow = c(2,2), 
@@ -183,16 +215,19 @@ plot(logit.log.mass)
 
 # On (not) Comparing models with different transformations of the response variable
 
-* Note that we can't compare the fit of these 2 models because transforming the y variable changes the underlying structure of the data.  
-* You can't compare the "log-log"" and "logit-log"" model with either ANVOA (because the models are not nested) or AIC (because the underlying response variables differ). 
+* As referenced above, we directly can't compare the fit of these 2 models because transforming the y variable changes the underlying structure of the data.  
+* You can't compare the "log-log"" and "logit-log"" model with either ANVOA (because the models are not "nested" - one is not a subset of the other) or AIC (because the underlying response variables differ). 
 * Transformations of the y variable are assessed based on their residuals; you can't formally test whether one transformation is better than the other (doing so would probably lead to p-hacking too)
+* The above statement isn't strictly true - there's a somewhat outdated method called the Box-Cox transformation which is meant to come up with an optimal transformation.  This approach no longer seems to be used.  Most statisticians seem to advocate use of transformations that are a priori appropriate, such as logit for percentages or the correct GLM, or to assess the effectiveness of a transformation based on model residuals. 
 
 
 
 
 # Plot model
 
-* The slope of this model is not significant, but let's practice plotting it against the raw data * This is an essential but frequently skipped step in model checking.
+* The slope of this model is not significant, but let's practice plotting it against the raw data 
+* This is an essential but frequently skipped step in model checking!  The number of papers that report regression results without a plot of the data with the model is surprising, especially since supplemental online appendices are so easy to make.
+* Sometimes in older papers you will see just the regression line ploted without the data.  THis is not that helpful either.
 
 
 ## Get predictions from model

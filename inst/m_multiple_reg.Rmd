@@ -11,7 +11,7 @@ vignette: >
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, strip.white = FALSE, cache = FALSE)
 ```
 
 
@@ -37,7 +37,7 @@ lm.null <- lm(fat.percent ~ 1,
     + litter size, duration of lactation, etc
 * We can use hypothesis tests to determine if each one of these is "significant"
 * But, can't compare these models because they aren't "nested"
-* In contrats, AIC can compare "non-neste models"
+* In contrast, AIC can compare "non-nested models"
 
 
 
@@ -236,7 +236,7 @@ plot(log(gest.month.NUM) ~ log(lacat.mo.NUM),
 ```
 
 * All of our predictors are highly correlated with each other
-* "collinearity" of predictory or "multicollinearity" is major problem in regression
+* "collinearity" of predictors or "multicollinearity" is major problem in regression
 
 
 
