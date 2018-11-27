@@ -38,7 +38,7 @@ gg_lm_plot <- function(mod,
 
 
   plot. <- ggplot2::ggplot(dat,
-         aes_string(x = names(dat)[2],
+              ggplot2::aes_string(x = names(dat)[2],
                     y = names(dat)[1])) +
     ggplot2::geom_point() +
     ggplot2::stat_smooth(method = "lm",

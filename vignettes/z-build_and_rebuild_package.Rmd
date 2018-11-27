@@ -1,0 +1,93 @@
+---
+title: "Building and rebuilding vignettes"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This code is used to build, re-build, and trouble shoot the building of the package, including 
+
+1. Building/compiling diffrent components
+1. Building the pkgdown website
+
+These are mostly commands that can be launched from within RStudio via the GUI, except pkgdown::build_site()
+
+## devtools functions
+
+### Clean vignettes
+
+"This uses a fairly rudimentary algorithm where any files in ‘inst/doc’ with a name that exists in ‘vignettes’ are removed."
+
+```{r, eval = F}
+clean_vignettes() 
+```
+
+### Build vignettes
+
+"Builds package vignettes using the same algorithm that R CMD build does"
+
+```{r, eval = F}
+devtools::build_vignettes()
+```
+
+### Build documentation
+
+document()
+
+```{r, eval = F}
+devtools::document(roclets=c('rd', 'collate', 'namespace'))
+```
+
+### Load all
+
+```{r, eval = F}
+devtools::load_all(".")
+
+```
+
+
+### Check
+
+```{r, eval = F}
+devtools::check()
+```
+
+check_failures
+
+## pckgdown functions
+
+### Build package down website
+
+```{r, eval = F}
+pkgdown::build_site()
+```
+
+
+
+
+## Rcmd.exe
+"Clean and rebuild"
+==> Rcmd.exe INSTALL --preclean --no-multiarch --with-keep.source mammalsmilk
+
+"Install restart"
+==> Rcmd.exe INSTALL --no-multiarch --with-keep.source mammalsmilk
+
+
+
+
+

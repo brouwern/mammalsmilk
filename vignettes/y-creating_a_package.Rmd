@@ -1,5 +1,5 @@
 ---
-title: "z) Creating this package"
+title: "w) Creating this package"
 author: "Nathan Brouwer"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -43,7 +43,7 @@ create_package(path = getwd())
 
 Create a vignette infrastructure and dummy vignette
 ```{r, eval = F}
-usethis::use_vignette("g-linear_reg_diagnostics")
+usethis::use_vignette("z-updating_package")
 ```
 
 ### Create "readme" and "news" files
@@ -218,60 +218,6 @@ edit_git_ignore()
 
 use_directory()
 Use a directory
-
-
-
-
-## devtools functions
-
-"Builds package vignettes using the same algorithm that R CMD build does"
-
-```{r, eval = F}
-devtools::build_vignettes()
-```
-
-"This uses a fairly rudimentary algorithm where any files in ‘inst/doc’ with a name that exists in ‘vignettes’ are removed."
-
-```{r, eval = F}
-
-clean_vignettes() 
-```
-
-
-## pckgdown functions
-
-```{r, eval = F}
-pkgdown::build_site()
-```
-
-check_failures
-```{r}
-
-```
-
-
-## Rcmd.exe
-"Clean and rebuild"
-==> Rcmd.exe INSTALL --preclean --no-multiarch --with-keep.source mammalsmilk
-
-"Install restart"
-==> Rcmd.exe INSTALL --no-multiarch --with-keep.source mammalsmilk
-
-## Devtools function
-
-
-```{r, eval = F}
-## "Document"
-devtools::document(roclets=c('rd', 'collate', 'namespace'))
-
-## "Load all"
-devtools::load_all(".")
-
-## devtools::build_vignettes()
-
-## "Check"
-devtools::check()
-```
 
 
 

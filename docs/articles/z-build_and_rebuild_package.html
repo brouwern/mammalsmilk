@@ -5,11 +5,11 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>f1) Linear regression notes • mammalsmilk</title>
+<title>Building and rebuilding vignettes • mammalsmilk</title>
 <!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><!-- Font Awesome icons --><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="f1) Linear regression notes">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Building and rebuilding vignettes">
 <meta property="og:description" content="">
 <meta name="twitter:card" content="summary">
 <!-- mathjax --><script src="https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!--[if lt IE 9]>
@@ -108,14 +108,13 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1>f1) Linear regression notes</h1>
-                        <h4 class="author">Nathan Brouwer | <a href="mailto:brouwern@gmail.com">brouwern@gmail.com</a> | <span class="citation">@lowbrowR</span>
-</h4>
+      <h1>Building and rebuilding vignettes</h1>
+                        <h4 class="author">Vignette Author</h4>
             
             <h4 class="date">2018-11-27</h4>
       
       
-      <div class="hidden name"><code>f1-linear_reg_notes.Rmd</code></div>
+      <div class="hidden name"><code>z-build_and_rebuild_package.Rmd</code></div>
 
     </div>
 
@@ -124,126 +123,60 @@
 <div id="introduction" class="section level2">
 <h2 class="hasAnchor">
 <a href="#introduction" class="anchor"></a>Introduction</h2>
-<p>This is a set of notes on simple linear regression.</p>
-</div>
-<div id="what-does-regression-do" class="section level2">
-<h2 class="hasAnchor">
-<a href="#what-does-regression-do" class="anchor"></a>What does regression do?</h2>
-<p>Regression typically is involved in 3 potentially related tasks</p>
+<p>This code is used to build, re-build, and trouble shoot the building of the package, including</p>
 <ol style="list-style-type: decimal">
-<li>Model selection</li>
-<li>Prediction</li>
-<li>Inference</li>
+<li>Building/compiling diffrent components</li>
+<li>Building the pkgdown website</li>
 </ol>
-<p>For the milk data, relevant aspects of these tasks might be:</p>
-<ul>
-<li>MODEL SELECTION: what’s the best predictor of milk fat?
-<ul>
-<li>body size?</li>
-<li>litter size?</li>
-<li>lactation duration?</li>
-</ul>
-</li>
-<li>PREDICTION: i.e., given the body size of an extinct animal, what do we …
-<ul>
-<li>predict its % milk fat to be?</li>
-<li>how certain could we be in this prediction?</li>
-</ul>
-</li>
-<li>INFERENCE: is the evolution of milk fat drive by change in body size?</li>
-</ul>
-<p><strong>Model selection</strong> can have as its end goal either used for inference or prediction. For inference, the “best” model is considered to have, <em>relative to the other models</em>, a higher chance of representing causal relationships. However, if a model the corresponds to reality isn’t included in the set of models examined, any inference about causation will be spurious. Moreover, investigation about causation is always best grounded in experimentation, and the milk dataset. For prediction, model selection is about finding the strongest statistical association between y and x variables</p>
-<p><strong>Prediction</strong> can be agnostic to inference; the prediction just has to be accurate, regardless of the actual causal relationship between the y and the x variable. Stated another way, prediction is about the statistical relationship between 2 variables.</p>
+<p>These are mostly commands that can be launched from within RStudio via the GUI, except pkgdown::build_site()</p>
 </div>
-<div id="steps-in-regression" class="section level2">
+<div id="devtools-functions" class="section level2">
 <h2 class="hasAnchor">
-<a href="#steps-in-regression" class="anchor"></a>Steps in regression</h2>
-<ul>
-<li>Standard approach
-<ul>
-<li>Model fitting: least squares</li>
-<li>Inference: Frequentist</li>
-<li>(In particular: “NHST” w/alpha = 0.05)</li>
-<li>(=“Null hypothesis significance testing”)</li>
-</ul>
-</li>
-<li>More advanced models:
-<ul>
-<li>Model fitting: “generalized least square” (GLS)</li>
-<li>gls() function, nlme package</li>
-<li>can relax standard regression assumptions, such as constancy of variance or independence of data</li>
-<li>This tool isn’t used by bio/ecologists much, but should be!</li>
-<li>The exception to this is comparative studies like Skibiel which should take into account phylogeny</li>
-</ul>
-</li>
-<li>Advanced models: Likelihood
-<ul>
-<li>For “GLMs”: generalized linear models</li>
-<li>i.e. logistic regression</li>
-<li>repeated measures, mixed effects, random effects often fit with likelihood methods</li>
-</ul>
-</li>
-<li>Very Complex models: Bayes w/ MCMC
-<ul>
-<li>very complex/hierarchical or multilevel models</li>
-<li>MCMC: Markov chain Monte carol</li>
-</ul>
-</li>
-</ul>
-</div>
-<div id="aside-what-do-i-mean-by-multilevel-or-hiearchical" class="section level2">
-<h2 class="hasAnchor">
-<a href="#aside-what-do-i-mean-by-multilevel-or-hiearchical" class="anchor"></a>Aside: what do I mean by “multilevel” or “hiearchical”</h2>
-<ul>
-<li>Many names for same / similar issue
-<ul>
-<li>repeated measures</li>
-<li>blocking</li>
-<li>random effects / mixed effects models</li>
-<li>multilevel models</li>
-<li>hierarchical models</li>
-</ul>
-</li>
-<li>Measurements on same thing multiple times or on similar experimental units are likely to be more similar to each other than random</li>
-<li>Violates the assumption of independence in regression/ANOVA</li>
-</ul>
-</div>
-<div id="multilevel-examples" class="section level2">
-<h2 class="hasAnchor">
-<a href="#multilevel-examples" class="anchor"></a>Multilevel Examples</h2>
-<ul>
-<li>Education studies
-<ul>
-<li>students in class rooms in schools in districts in states</li>
-<li>(multiple students per class, multiples classes per school, multiple schools per district)</li>
-</ul>
-</li>
-<li>Health-care studies
-<ul>
-<li>patients on hospital floors in hospitals in cities</li>
-</ul>
-</li>
-<li>Animal studies
-<ul>
-<li>repeated measures on mice in cages</li>
-<li>(multiple measurements per mice, multiple mice per cage)</li>
-</ul>
-</li>
-</ul>
-</div>
-<div id="regression-models-in-r-using-lm" class="section level2">
-<h2 class="hasAnchor">
-<a href="#regression-models-in-r-using-lm" class="anchor"></a>Regression models in R using lm()</h2>
-<div id="focal-data-subset-primates-relatives" class="section level3">
+<a href="#devtools-functions" class="anchor"></a>devtools functions</h2>
+<div id="clean-vignettes" class="section level3">
 <h3 class="hasAnchor">
-<a href="#focal-data-subset-primates-relatives" class="anchor"></a>Focal data subset: Primates &amp; Relatives</h3>
-<ul>
-<li>Primates</li>
-<li>Rodents</li>
-<li>Rabbits</li>
-</ul>
-<p>Rodents are relatively closely related to primates; this is one reason why mouse models are often useful for biomedical studies.</p>
+<a href="#clean-vignettes" class="anchor"></a>Clean vignettes</h3>
+<p>“This uses a fairly rudimentary algorithm where any files in ‘inst/doc’ with a name that exists in ‘vignettes’ are removed.”</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clean_vignettes</span>() </code></pre></div>
 </div>
+<div id="build-vignettes" class="section level3">
+<h3 class="hasAnchor">
+<a href="#build-vignettes" class="anchor"></a>Build vignettes</h3>
+<p>“Builds package vignettes using the same algorithm that R CMD build does”</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/build_vignettes">build_vignettes</a></span>()</code></pre></div>
+</div>
+<div id="build-documentation" class="section level3">
+<h3 class="hasAnchor">
+<a href="#build-documentation" class="anchor"></a>Build documentation</h3>
+<p>document()</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/document">document</a></span>(<span class="dt">roclets=</span><span class="kw">c</span>(<span class="st">'rd'</span>, <span class="st">'collate'</span>, <span class="st">'namespace'</span>))</code></pre></div>
+</div>
+<div id="load-all" class="section level3">
+<h3 class="hasAnchor">
+<a href="#load-all" class="anchor"></a>Load all</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/load_all">load_all</a></span>(<span class="st">"."</span>)</code></pre></div>
+</div>
+<div id="check" class="section level3">
+<h3 class="hasAnchor">
+<a href="#check" class="anchor"></a>Check</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/check">check</a></span>()</code></pre></div>
+<p>check_failures</p>
+</div>
+</div>
+<div id="pckgdown-functions" class="section level2">
+<h2 class="hasAnchor">
+<a href="#pckgdown-functions" class="anchor"></a>pckgdown functions</h2>
+<div id="build-package-down-website" class="section level3">
+<h3 class="hasAnchor">
+<a href="#build-package-down-website" class="anchor"></a>Build package down website</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pkgdown<span class="op">::</span><span class="kw"><a href="https://pkgdown.r-lib.org/reference/build_site.html">build_site</a></span>()</code></pre></div>
+</div>
+</div>
+<div id="rcmd-exe" class="section level2">
+<h2 class="hasAnchor">
+<a href="#rcmd-exe" class="anchor"></a>Rcmd.exe</h2>
+<p>“Clean and rebuild” ==&gt; Rcmd.exe INSTALL –preclean –no-multiarch –with-keep.source mammalsmilk</p>
+<p>“Install restart” ==&gt; Rcmd.exe INSTALL –no-multiarch –with-keep.source mammalsmilk</p>
 </div>
   </div>
 
@@ -253,11 +186,9 @@
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
 <li><a href="#introduction">Introduction</a></li>
-      <li><a href="#what-does-regression-do">What does regression do?</a></li>
-      <li><a href="#steps-in-regression">Steps in regression</a></li>
-      <li><a href="#aside-what-do-i-mean-by-multilevel-or-hiearchical">Aside: what do I mean by “multilevel” or “hiearchical”</a></li>
-      <li><a href="#multilevel-examples">Multilevel Examples</a></li>
-      <li><a href="#regression-models-in-r-using-lm">Regression models in R using lm()</a></li>
+      <li><a href="#devtools-functions">devtools functions</a></li>
+      <li><a href="#pckgdown-functions">pckgdown functions</a></li>
+      <li><a href="#rcmd-exe">Rcmd.exe</a></li>
       </ul>
 </div>
       </div>

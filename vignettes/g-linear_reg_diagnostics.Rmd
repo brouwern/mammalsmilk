@@ -624,18 +624,6 @@ As noted above, a Cook's distance >1 is considered potentially problematic, thou
 
 
 
-## Resources
-
----
-title: "Untitled"
-author: "Nathan Brouwer"
-date: "November 21, 2018"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ## Resources
 

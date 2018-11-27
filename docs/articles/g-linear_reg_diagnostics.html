@@ -87,7 +87,13 @@
       <a href="../articles/g-linear_reg_diagnostics.html">g) Regression diagnostics &amp; Residual Analysis</a>
     </li>
     <li>
-      <a href="../articles/z-building_a_package.html">z) Creating this package</a>
+      <a href="../articles/r-regression_references.html">r) Regression references</a>
+    </li>
+    <li>
+      <a href="../articles/y-creating_a_package.html">w) Creating this package</a>
+    </li>
+    <li>
+      <a href="../articles/z-build_and_rebuild_package.html">Building and rebuilding vignettes</a>
     </li>
   </ul>
 </li>
@@ -113,7 +119,7 @@
                         <h4 class="author">Nathan Brouwer | <a href="mailto:brouwern@gmail.com">brouwern@gmail.com</a> | <span class="citation">@lobrowR</span>
 </h4>
             
-            <h4 class="date">2018-11-21</h4>
+            <h4 class="date">2018-11-27</h4>
       
       
       <div class="hidden name"><code>g-linear_reg_diagnostics.Rmd</code></div>
@@ -561,12 +567,24 @@ milk_primates<span class="op">$</span>r.i &lt;-<span class="st"> </span><span cl
 <div id="resources" class="section level2">
 <h2 class="hasAnchor">
 <a href="#resources" class="anchor"></a>Resources</h2>
-<div id="websites" class="section level3">
+<div id="regression-assumptions-2" class="section level3">
 <h3 class="hasAnchor">
-<a href="#websites" class="anchor"></a>Websites</h3>
+<a href="#regression-assumptions-2" class="anchor"></a>Regression Assumptions</h3>
 <p><a href="http://r-statistics.co/Assumptions-of-Linear-Regression.html">“Assumptions of Linear Regression”</a></p>
-<p><a href="https://www.statmethods.net/stats/rdiagnostics.html">Quick-R: Regression Diagnostics</a></p>
 <p><a href="https://ademos.people.uic.edu/Chapter12.html#2_regression_assumptions" class="uri">https://ademos.people.uic.edu/Chapter12.html#2_regression_assumptions</a></p>
+</div>
+<div id="regression-diagnostics" class="section level3">
+<h3 class="hasAnchor">
+<a href="#regression-diagnostics" class="anchor"></a>Regression Diagnostics</h3>
+<p>Hollard. 2011. “Regression diagnostic plots.” <a href="http://strata.uga.edu/8370/rtips/regressionPlots.html">Data Analysis in the Geosciences (GEOL 8370)</a></p>
+<ul>
+<li>A good walkthrough of diagnostics using simulation to show how diagnostics plots vary under different conditions.</li>
+</ul>
+<p>Chatterjee et al. 1992. A review of regression diagnostics for behavioral research. <a href="https://doi.org/10.1177/014662169201600301">Applied Psychological Measurement.</a></p>
+<ul>
+<li>In-depth but non-mathy coverage of all major diagnostics tools.</li>
+</ul>
+<p><a href="https://www.statmethods.net/stats/rdiagnostics.html">Quick-R: Regression Diagnostics</a></p>
 <p><a href="https://ademos.people.uic.edu/Chapter12.html#32_testing_for_outliers:_outliertest" class="uri">https://ademos.people.uic.edu/Chapter12.html#32_testing_for_outliers:_outliertest</a>()</p>
 </div>
 <div id="wikipedia" class="section level3">
@@ -594,32 +612,94 @@ milk_primates<span class="op">$</span>r.i &lt;-<span class="st"> </span><span cl
 <p>Pena &amp; Slate. 2006. <a href="https://doi.org/10.1198/016214505000000637">Global Validation of Linear Model Assumptions. Am Stat.</a></p>
 </div>
 </div>
+<div id="spatial-autocorrelation" class="section level3">
+<h3 class="hasAnchor">
+<a href="#spatial-autocorrelation" class="anchor"></a>Spatial autocorrelation</h3>
+<p>Valcul &amp; Kempenaers. 2010. Spatial autocorrelation: an overlooked concept in behavioral ecology. <a href="https://doi.org/10.1093/beheco/arq107">Behavioral Ecology</a></p>
+<p>Legendre. 1993. Spatial autocorrelation: trouble or new paradigm? <a href="https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1939924">Ecology.</a></p>
+<p>Noble et al. 2017. Nonindependence and sensitivity analyses in ecological and evolutionary meta-analyses. <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/mec.14031">Molecular Ecology</a></p>
+<ul>
+<li>While this is about meta-analysis, it has great info on issues of non-independence. See Figure 4 especially.</li>
+</ul>
+</div>
+<div id="normality" class="section level3">
+<h3 class="hasAnchor">
+<a href="#normality" class="anchor"></a>Normality</h3>
+<p>Curran-Everett. 2017. Explorations in statistics: the assumption of normality. <a href="https://www.physiology.org/doi/full/10.1152/advan.00064.2017">Advances in physiology education.</a></p>
+</div>
 <div id="nature-methods-tutorials" class="section level3">
 <h3 class="hasAnchor">
 <a href="#nature-methods-tutorials" class="anchor"></a>Nature methods tutorials</h3>
+<p>Generally excellent short tutorials on key topics.</p>
 <p>Altman &amp; Krzywinski. 2015. Points of Significance: Association, correlation and causation. <a href="https://www.nature.com/nmeth/journal/v12/n10/abs/nmeth.3587.html">Nature Methods</a></p>
 <p>Krzywinski &amp; Altman. 2015. Points of Significance: Multiple linear regression. <a href="https://www.nature.com/articles/nmeth.3665">Nature Methods.</a></p>
 <p>Altman &amp; Krzywinski. 2016. Points of Significance: Analyzing outliers: influential or nuisance? [Nature Methods.]</p>
-<p>Altman &amp; Krzywinski. 2016. Points of Significance: Regression diagnostics. <a href="https://www.nature.com/articles/nmeth.3854">Nature Methods.</a></p>
+</div>
+<div id="logs" class="section level3">
+<h3 class="hasAnchor">
+<a href="#logs" class="anchor"></a>Logs</h3>
+<p>“Demystying the Natural Logarith (ln)” <a href="https://betterexplained.com/articles/demystifying-the-natural-logarithm-ln/" class="uri">https://betterexplained.com/articles/demystifying-the-natural-logarithm-ln/</a></p>
+<ul>
+<li>Great general introduction to the basic math.</li>
+</ul>
+<p><strong>Bland &amp; ALtman</strong>. 1996. Statistics notes. Logarithms. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2350526/">MBJ</a></p>
+<p><strong>Altman &amp; Krzywinski</strong>. 2016. Points of Significance: Regression diagnostics. <a href="https://www.nature.com/articles/nmeth.3854">Nature Methods.</a></p>
 </div>
 <div id="transformation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#transformation" class="anchor"></a>Transformation</h3>
+<p>**Curran-Everett. 2018. Explorations in statistics: the log transformation. <a href="https://doi.org/10.1152/advan.00018.2018">Advances in Physiology Education</a></p>
+<ul>
+<li>A deep exploration of the log transformation</li>
+</ul>
 <p>Bland &amp; Altman 1996. Statistics Notes: Transforming data. <a href="https://www.bmj.com/content/312/7033/770">BMJ</a></p>
 <p>Bland &amp; ALtman 1996. Statistics notes. Logarithms. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2350526/">MBJ</a></p>
+<p>Keene. 1995. The log transformation is special. <a href="https://doi.org/10.1002/sim.4780140810">Statistics in Medicine.</a></p>
+<ul>
+<li>Arguement for why log transformation should be done a priori for many analytical situations.</li>
+</ul>
+</div>
+<div id="transformation-and-back-transformations" class="section level3">
+<h3 class="hasAnchor">
+<a href="#transformation-and-back-transformations" class="anchor"></a>Transformation and back transformations</h3>
 <p>Bland &amp; ALtman. 1996. Statistics notes: Transformations, means, and confidence intervals. <a href="https://www.bmj.com/content/312/7038/1079.full">BMJ</a></p>
+<ul>
+<li>Short introduce of the topic. “carry out all calculations on the transformed scale and transform back once we have calculated the confidence interval. This works for the sample mean and its confidence interval. Things become more complicated if we look at the difference between two means.”</li>
+</ul>
+<p>Manning. 1998. The logged dependent variable, heteroscedasticity, and the retransformation problem. <a href="https://doi.org/10.1016/S0167-6296(98)00025-3">Journal of Health Economics</a></p>
+</div>
+<div id="heteroskedasticity" class="section level3">
+<h3 class="hasAnchor">
+<a href="#heteroskedasticity" class="anchor"></a>Heteroskedasticity</h3>
+<p>Cleasby &amp; Nakagaw 2011. Neglected biological patterns in the residuals. <a href="https://link.springer.com/article/10.1007/s00265-011-1254-7">Behavioral Ecology &amp; Sociobiology</a></p>
+</div>
+<div id="clustering-grouping-nesting" class="section level3">
+<h3 class="hasAnchor">
+<a href="#clustering-grouping-nesting" class="anchor"></a>Clustering / Grouping / Nesting</h3>
+<p>Schielzeth &amp; Nakagawa. 2013. Nested by design: model fitting and interpretation in a mixed model era. <a href="https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/j.2041-210x.2012.00251.x">Methods in Ecology and Evolution.</a></p>
+<p>Chaves 2010. An entomologist guide to demystify pseudoreplication: data analysis of field studies with design constraints. <a href="https://academic.oup.com/jme/article/47/3/291/889033">Journal of medical entomology</a></p>
+<p>Wagner et al. 2006. Accounting for multilevel data structures in fisheries data using mixed models. <a href="https://www.tandfonline.com/doi/abs/10.1577/1548-8446(2006)31%5B180%3AAFMDSI%5D2.0.CO%3B2">Fisheries.</a></p>
+</div>
+<div id="log-normal-distribution" class="section level3">
+<h3 class="hasAnchor">
+<a href="#log-normal-distribution" class="anchor"></a>Log-normal distribution</h3>
 <p>Limpert et al. 2001. Log-normal Distributions across the Sciences: Keys and Clues. BioScience.</p>
 </div>
-<div id="general-linear-models" class="section level3">
+<div id="kurtosis" class="section level3">
 <h3 class="hasAnchor">
-<a href="#general-linear-models" class="anchor"></a>General linear models</h3>
-<p>Zhang 2016. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4885900/">Residuals and regression diagnostics: focusing on logistic regression. Annals of Translational Medicine.</a></p>
+<a href="#kurtosis" class="anchor"></a>Kurtosis</h3>
+<p>Westfall 2014: Kurtosis as Peakedness, 1905–2014. R.I.P. <a href="https://www.tandfonline.com/doi/abs/10.1080/00031305.2014.917055">Am. Stat.</a></p>
 </div>
 <div id="outlier-detection-tests" class="section level3">
 <h3 class="hasAnchor">
 <a href="#outlier-detection-tests" class="anchor"></a>Outlier detection tests</h3>
 <p>Leys et al. 2013. Detecting outliers: Do not use standard deviation around the mean, use absolute deviation around the median. <a href="https://www.sciencedirect.com/science/article/pii/S0022103113000668">Journal of Experimental Social Psychology.</a></p>
 <p>Bakker and Wicherts 2014. Outlier Removal and the Relation with Reporting Errors and Quality of Psychological Research. <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0103360">PLoS ONE.</a></p>
+</div>
+<div id="general-linear-model-diagnostics" class="section level3">
+<h3 class="hasAnchor">
+<a href="#general-linear-model-diagnostics" class="anchor"></a>General linear model diagnostics</h3>
+<p>Zhang 2016. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4885900/">Residuals and regression diagnostics: focusing on logistic regression. Annals of Translational Medicine.</a></p>
 </div>
 </div>
   </div>

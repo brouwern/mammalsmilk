@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE, strip.white = FALSE, warning = FALSE,message 
 
 
 
+
 ```{r, echo = FALSE}
 setwd("C:/Users/lisanjie2/Desktop/TEACHING/1_STATS_CalU/1_STAT_CalU_2016_by_NLB/1_STAT_Duq_2017/HOMEWORK/Duq_Biostats_Homework_4_Milk_regression/homework4_RMD_vs2")
 dat2 <- read.csv("milk_subset.csv")

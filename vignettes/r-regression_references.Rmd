@@ -1,3 +1,17 @@
+---
+title: "r) Regression references"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+
 
 Boldina & Beninger.  2016.  Strengthening statistical usage in marine ecology: Linear regression.  [Journal of Experimental Marine Biology & Ecology](https://www.sciencedirect.com/science/article/pii/S002209811530023X)
 
